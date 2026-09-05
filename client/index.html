@@ -4,54 +4,223 @@
 <meta name="description" content="Perpetuals on tokenized stocks on Robinhood Chain where the dividend actually moves: shorts pay it, longs receive it, on the ex-date, 24/7.">
 <meta property="og:title" content="DIVI — perps that pay dividends"><meta property="og:description" content="Long a tokenized stock perp, get paid like a shareholder. Shorts pay the dividend, longs receive it. Robinhood Chain, USDG, 24/7."><meta property="og:image" content="/brand/divi-banner.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-</head><body>
-<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Perps that pay dividends<small>Robinhood Chain · USDG · 24/7</small></div>
-<nav class="menus"><a href="/" class="on">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a><a href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a></nav></div>
-<div class="right"><button class="share" id="connect">Connect</button></div></div>
-<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Click any cell to see how it is computed.</div></div>
-<div class="sheetwrap"><div id="sheet"></div></div>
-<div class="tabs"><span class="plus">+</span><a href="/" class="on">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status">connecting…</span></div>
-<script src="/sheet.js"></script><script src="/connect.js"></script>
+<style>
+/* ── landing only ── */
+#stage{position:fixed;inset:0;z-index:0}
+#stage canvas{display:block;width:100%;height:100%}
+#stage::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(246,243,238,.92) 0%,rgba(246,243,238,.72) 38%,rgba(246,243,238,0) 68%);pointer-events:none}
+@media(max-width:860px){#stage::after{background:linear-gradient(180deg,rgba(246,243,238,.55),rgba(246,243,238,.82) 60%,rgba(246,243,238,.95))}}
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 9vh;pointer-events:none}
+.hero>*{pointer-events:auto}
+.hero .eyebrow{font:500 13px/1 var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:22px;display:flex;gap:14px;align-items:center}
+.hero .eyebrow i{display:inline-block;width:34px;height:1px;background:var(--gold)}
+.hero h1{font:400 clamp(58px,10.5vw,164px)/.92 var(--serif);letter-spacing:-.025em;color:var(--ink);max-width:14ch}
+.hero h1 em{font-style:italic;color:var(--goldDeep)}
+.hero h1 .w{display:inline-block;overflow:hidden;vertical-align:bottom}
+.hero h1 .w span{display:inline-block;transform:translateY(110%);animation:rise 1.1s cubic-bezier(.2,.7,.1,1) forwards}
+.hero p{font:400 clamp(17px,1.6vw,22px)/1.45 var(--ui);color:var(--ink2);max-width:56ch;margin:28px 0 34px;opacity:0;animation:fade 1s .7s forwards}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;opacity:0;animation:fade 1s .9s forwards}
+.pay{position:absolute;right:6vw;bottom:9vh;text-align:right;opacity:0;animation:fade 1s 1.2s forwards}
+.pay .k{font:500 12px/1 var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+.pay .v{font:400 clamp(30px,3.4vw,52px)/1.05 var(--serif);color:var(--ink);margin-top:8px}
+.pay .v em{font-style:italic;color:var(--goldDeep)}
+.pay .s{font:400 14px var(--ui);color:var(--ink2);margin-top:6px}
+@keyframes rise{to{transform:none}}
+@keyframes fade{to{opacity:1}}
+@media(max-width:860px){.pay{position:static;text-align:left;margin-top:30px}.hero{justify-content:center;padding-bottom:12vh}}
+main{position:relative;z-index:1;background:linear-gradient(to bottom,transparent 0,var(--paper) 140px)}
+section{padding:14vh 6vw}
+.sect-head{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:56px}
+.sect-head h2{font:400 clamp(40px,5.6vw,84px)/.98 var(--serif);letter-spacing:-.02em}
+.sect-head h2 em{font-style:italic;color:var(--goldDeep)}
+.sect-head p{font:400 18px/1.5 var(--ui);color:var(--ink2);max-width:46ch}
+@media(max-width:860px){.sect-head{grid-template-columns:1fr}}
+/* pinned mechanism */
+.pin{height:320vh;position:relative}
+.pin .stick{position:sticky;top:0;height:100vh;display:grid;grid-template-rows:auto 1fr auto;padding:12vh 6vw 8vh}
+.mech{position:relative;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:0;height:100%}
+.side{position:relative;padding:34px;border-radius:28px;background:var(--paper2);border:1px solid var(--line);min-height:300px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .5s,box-shadow .5s,border-color .5s}
+.side .lab{font:500 12px/1 var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.side .big{font:400 clamp(44px,5vw,80px)/1 var(--serif);margin:16px 0 8px}
+.side .num{font:500 clamp(22px,2.4vw,34px)/1.1 var(--ui);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.side.short .big{color:var(--red)}.side.long .big{color:var(--green)}
+.side.hot{transform:translateY(-6px);box-shadow:0 30px 60px -30px rgba(0,0,0,.25);border-color:var(--gold)}
+.track{position:relative;height:100%;display:flex;align-items:center;justify-content:center}
+.track .line{position:absolute;left:0;right:0;top:50%;height:1px;background:repeating-linear-gradient(90deg,var(--line2) 0 8px,transparent 8px 16px)}
+.coin{position:absolute;top:50%;left:0;width:92px;height:92px;margin:-46px 0 0 -46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff2b0,#e5c158 38%,#b8901f 70%,#8a6a12);box-shadow:0 18px 40px -12px rgba(120,90,10,.55),inset 0 -6px 12px rgba(0,0,0,.25),inset 0 6px 10px rgba(255,255,255,.5);
+  display:flex;align-items:center;justify-content:center;font:400 44px var(--serif);color:#5c4508;transform:translateX(0) rotateY(0);will-change:transform}
+.coin::after{content:"";position:absolute;inset:7px;border-radius:50%;border:1.5px dashed rgba(90,70,10,.45)}
+.caps{position:relative;height:120px}
+.cap{position:absolute;inset:0;opacity:0;transition:opacity .4s,transform .4s;transform:translateY(10px);font:400 clamp(22px,2.6vw,36px)/1.2 var(--serif);max-width:32ch}
+.cap.on{opacity:1;transform:none}
+.cap em{font-style:italic;color:var(--goldDeep)}
+.gap{position:absolute;left:34px;right:34px;bottom:34px;height:64px}
+.gap svg{width:100%;height:100%;overflow:visible}
+@media(max-width:860px){.pin{height:auto}.pin .stick{position:static;height:auto;display:block}.mech{grid-template-columns:1fr;gap:16px}.track{height:120px}.caps{height:auto;margin-top:20px}.cap{position:static;opacity:1;transform:none;margin-bottom:12px}}
+/* paycheck cards */
+.rail{display:flex;gap:18px;overflow-x:auto;padding:8px 6vw 30px;margin:0 -6vw;scroll-snap-type:x mandatory;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.card{flex:0 0 min(340px,82vw);scroll-snap-align:start;border-radius:26px;background:linear-gradient(160deg,#fffdf7,#f3eee2);border:1px solid var(--line);padding:26px 26px 22px;position:relative;transform-style:preserve-3d;transition:transform .15s ease-out,box-shadow .3s;box-shadow:0 20px 50px -30px rgba(40,30,0,.3);text-decoration:none;color:inherit;display:block}
+.card:hover{box-shadow:0 40px 70px -30px rgba(40,30,0,.35)}
+.card .top{display:flex;justify-content:space-between;align-items:baseline}
+.card .tk{font:400 64px/1 var(--serif);letter-spacing:-.03em}
+.card .yl{font:600 13px/1 var(--ui);color:var(--green);background:var(--greenfill);padding:6px 10px;border-radius:20px}
+.card .nm{font:400 14px var(--ui);color:var(--ink3);margin-top:6px}
+.card .mk{font:500 30px/1.1 var(--ui);letter-spacing:-.02em;margin:22px 0 2px;font-variant-numeric:tabular-nums}
+.card .mk small{font-size:13px;color:var(--ink3);font-weight:400;margin-left:6px}
+.card .row{display:flex;justify-content:space-between;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.card .row .k{font:500 11px/1.3 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.card .row .v{font:400 22px/1.1 var(--serif);margin-top:5px}
+.card .row .v.gold{color:var(--goldDeep)}
+.card .stamp{position:absolute;top:18px;right:18px;font:500 10px/1 var(--ui);letter-spacing:.16em;text-transform:uppercase;padding:5px 8px;border-radius:14px;border:1px solid var(--line2);color:var(--ink3)}
+.card .stamp.on{border-color:var(--green);color:var(--green)}
+/* calculator */
+.calc{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;border-radius:32px;background:var(--ink);color:var(--paper);padding:56px;overflow:hidden;position:relative}
+.calc::before{content:"";position:absolute;width:700px;height:700px;border-radius:50%;right:-260px;top:-300px;background:radial-gradient(circle,rgba(229,193,88,.35),transparent 60%)}
+.calc h3{font:400 clamp(34px,4.4vw,64px)/1 var(--serif);letter-spacing:-.02em}
+.calc h3 em{font-style:italic;color:var(--gold)}
+.calc .out{font:400 clamp(56px,7vw,110px)/1 var(--serif);color:var(--gold);letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin:20px 0 6px}
+.calc .sub{font:400 15px/1.5 var(--ui);color:rgba(246,243,238,.7);max-width:44ch}
+.calc .ctl{display:grid;gap:22px;position:relative}
+.calc label{font:500 12px/1 var(--ui);letter-spacing:.16em;text-transform:uppercase;color:rgba(246,243,238,.6);display:flex;justify-content:space-between}
+.calc label b{color:var(--paper);font-weight:500;letter-spacing:0;text-transform:none;font-size:14px}
+.calc input[type=range]{width:100%;accent-color:var(--gold)}
+.calc select{width:100%;background:#1b1a17;color:var(--paper);border:1px solid #3a3833;border-radius:10px;padding:12px;font:15px var(--ui)}
+@media(max-width:860px){.calc{grid-template-columns:1fr;padding:32px}}
+/* three columns */
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.col{border-top:1px solid var(--ink);padding-top:22px}
+.col .n{font:400 44px/1 var(--serif);color:var(--goldDeep)}
+.col h4{font:400 30px/1.1 var(--serif);margin:14px 0 10px}
+.col p{font:400 15.5px/1.55 var(--ui);color:var(--ink2)}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+/* footer */
+footer{padding:60px 6vw 80px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font:400 14px var(--ui);color:var(--ink3);position:relative;z-index:1;background:var(--paper)}
+footer .wm{font:400 34px/1 var(--serif);color:var(--ink)}
+footer .links a{margin-left:18px;color:var(--ink2)}
+.cabar{display:flex;align-items:center;gap:14px;background:var(--paper2);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin:40px 0 0;font:500 14px var(--mono);flex-wrap:wrap}
+.cabar b{font:500 12px var(--ui);letter-spacing:.16em;text-transform:uppercase;color:var(--goldDeep)}
+</style>
+</head><body class="landing">
+<div id="stage"></div>
+<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/" class="on">Home</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a><a href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a></div><button class="connect" id="connect">Connect</button></nav>
+
+<header class="hero">
+  <div class="eyebrow"><i></i>Robinhood Chain · USDG · 24/7</div>
+  <h1><span class="w"><span style="animation-delay:.05s">Perps</span></span> <span class="w"><span style="animation-delay:.15s">that</span></span> <span class="w"><span style="animation-delay:.25s">pay</span></span><br><span class="w"><span style="animation-delay:.4s"><em>dividends.</em></span></span></h1>
+  <p>Long a tokenized stock perp and get paid like a shareholder. On every ex-dividend date the dividend moves from every short to every long, pro rata by shares. No treasury, no emissions. Shorts fund it, the way they always have.</p>
+  <div class="cta"><a class="btn dark" href="/trade">Open the desk</a><a class="btn" href="#how">How it works</a></div>
+  <div class="pay" id="pay"><div class="k">Next payday on the board</div><div class="v" id="payV">…</div><div class="s" id="payS"></div></div>
+</header>
+
+<main>
+  <section id="how" class="pin"><div class="stick">
+    <div class="sect-head"><h2>The dividend <em>moves.</em></h2><p>Every other perp forgets the dividend. The stock gaps down on the ex-date, the long eats it, the short pockets it. DIVI settles it the way stock lending always has.</p></div>
+    <div class="mech">
+      <div class="side short" id="sideS"><div><div class="lab">Short · 5× AAPL</div><div class="big">Owes</div></div><div><div class="num" id="sNum">−$4.23</div><div class="lab" style="margin-top:8px">15.67 shares × $0.27</div></div></div>
+      <div class="track"><div class="line"></div><div class="coin" id="coin">$</div></div>
+      <div class="side long" id="sideL"><div><div class="lab">Long · 5× AAPL</div><div class="big">Receives</div></div><div><div class="num" id="lNum">+$4.21</div><div class="lab" style="margin-top:8px">15.58 shares × $0.27</div></div></div>
+    </div>
+    <div class="caps">
+      <div class="cap on" data-at="0">On the ex-date the short’s margin is debited <em>shares × dividend.</em></div>
+      <div class="cap" data-at="0.33">The cash crosses the pool. The pool only carries its net exposure, <em>which the price gap offsets.</em></div>
+      <div class="cap" data-at="0.66">It lands in the long’s free balance. Price gapped down, cash came in. <em>Net, a shareholder.</em></div>
+    </div>
+  </div></section>
+
+  <section>
+    <div class="sect-head"><h2>Eleven names. <em>Every payday.</em></h2><p>Real tokenized stocks with real Robinhood Chain pools. Live 24/7 marks, the declared or projected ex-date, and what a $1,000 long earns on it.</p></div>
+    <div class="rail" id="rail"></div>
+  </section>
+
+  <section>
+    <div class="calc">
+      <div><h3>What would <em>your</em> long earn?</h3><div class="out" id="calcOut">$0.00</div><div class="sub" id="calcSub">Pick a name, a size and a leverage. The number is shares × the next declared dividend, paid on the ex-date to your free balance.</div></div>
+      <div class="ctl">
+        <div><label>Name <b id="cSymV">AAPL</b></label><select id="cSym"></select></div>
+        <div><label>Margin <b id="cMarV">$1,000</b></label><input type="range" id="cMar" min="100" max="25000" step="100" value="1000"></div>
+        <div><label>Leverage <b id="cLevV">3×</b></label><input type="range" id="cLev" min="1" max="10" value="3"></div>
+        <div><a class="btn gold" href="/trade" id="cGo">Trade it →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="cols">
+      <div class="col"><div class="n">01</div><h4>Fair value that never sleeps</h4><p>Each mark is a weighted median of the official tape, every Robinhood Chain pool by liquidity, the xStock on Solana and index futures × β, with a confidence band. Fills happen at mark ± half the band, so a wide Sunday band is a wide spread. Honest.</p></div>
+      <div class="col"><div class="n">02</div><h4>Records the exchange declared</h4><p>Only declared dividends (ex-date, amount) are signed by the oracle and settle on-chain. Projected ones are shown on the calendar so you can plan, and never move money.</p></div>
+      <div class="col"><div class="n">03</div><h4>Anyone can settle</h4><p>Settlement is a permissionless call against the signed record. Shorts pay, longs receive, the settler keeps 1% of what was collected. A short that cannot cover is closed out to the pool.</p></div>
+    </div>
+    <div class="cabar" id="cabar" hidden><b>$DIVI · Robinhood Chain</b><span id="ca"></span><button class="btn small" id="copy">Copy</button></div>
+  </section>
+</main>
+<footer><div><div class="wm">DIVI</div><div style="margin-top:8px">Perps that pay dividends · Robinhood Chain</div></div><div class="links"><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/api/board">API</a><a href="/contracts/DiviPerps.sol">Contract</a></div></footer>
+
+<script src="/connect.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+// ── the coin rain ──────────────────────────────────────────────────────────────
+const host=document.getElementById('stage');const mobile=innerWidth<860;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xf6f3ee);scene.fog=new THREE.Fog(0xf6f3ee,14,30);
+const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+const cam=new THREE.PerspectiveCamera(32,innerWidth/innerHeight,.1,100);cam.position.set(0,3.4,11);
+const key=new THREE.DirectionalLight(0xfff2d6,2.6);key.position.set(5,9,6);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-9;key.shadow.camera.right=9;key.shadow.camera.top=9;key.shadow.camera.bottom=-9;key.shadow.radius=6;key.shadow.bias=-0.0005;scene.add(key);
+scene.add(new THREE.HemisphereLight(0xffffff,0xd9cbb0,.9));
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:.22}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+// coin: bevelled cylinder + embossed "$" face texture
+const face=(()=>{const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');g.fillStyle='#d8b445';g.fillRect(0,0,512,512);g.strokeStyle='rgba(90,65,10,.55)';g.lineWidth=6;g.setLineDash([14,10]);g.beginPath();g.arc(256,256,214,0,7);g.stroke();g.setLineDash([]);g.fillStyle='#8a6612';g.font='italic 300px "Instrument Serif",Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.fillText('$',256,270);g.fillStyle='rgba(255,255,255,.35)';g.font='italic 296px "Instrument Serif",Georgia,serif';g.fillText('$',252,264);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t})();
+const gold=new THREE.MeshStandardMaterial({color:0xe2bd4f,metalness:1,roughness:.32,envMapIntensity:1.1});
+const goldFace=new THREE.MeshStandardMaterial({map:face,metalness:1,roughness:.36,envMapIntensity:1.1});
+const geo=new THREE.CylinderGeometry(.62,.62,.13,56,1,false);
+const N=mobile?60:150;const mesh=new THREE.InstancedMesh(geo,[gold,goldFace,goldFace],N);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+const P=[];const spread=mobile?4:6.5;const cx=mobile?0:3.2;
+function reset(i,first){P[i]={x:cx+(Math.random()-.5)*spread*2,y:first?Math.random()*14:12+Math.random()*6,z:(Math.random()-.5)*5-1,vy:0,rx:Math.random()*6.3,ry:Math.random()*6.3,rz:Math.random()*6.3,wx:(Math.random()-.5)*4,wz:(Math.random()-.5)*4,land:-1,rest:0}}
+for(let i=0;i<N;i++)reset(i,true);
+const m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),v=new THREE.Vector3(),s=new THREE.Vector3(1,1,1);
+let mx=0,my=0;addEventListener('pointermove',(ev)=>{mx=(ev.clientX/innerWidth-.5);my=(ev.clientY/innerHeight-.5)});
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
+let last=performance.now();
+function tick(now){const dt=Math.min(.033,(now-last)/1000);last=now;
+  const sy=Math.min(1,scrollY/innerHeight);
+  for(let i=0;i<N;i++){const p=P[i];
+    if(p.land<0){p.vy-=9.8*dt*.55;p.y+=p.vy*dt;p.rx+=p.wx*dt;p.rz+=p.wz*dt;
+      const h=.07+Math.abs(Math.sin(p.rx))*.55;const floorY=h+Math.random()*0.0;
+      if(p.y<=floorY){p.y=floorY;if(Math.abs(p.vy)>1.6){p.vy=-p.vy*.32;p.wx*=.6;p.wz*=.6}else{p.land=now;p.vy=0;p.rx=Math.round(p.rx/Math.PI)*Math.PI+(Math.random()-.5)*.08;p.rz=(Math.random()-.5)*.08;p.y=.07}}}
+    else if(now-p.land>6000+i*40){p.y-=dt*1.5;if(p.y<-1)reset(i,false)}
+    e.set(p.rx,p.ry,p.rz);q.setFromEuler(e);v.set(p.x,p.y-sy*6,p.z);m4.compose(v,q,s);mesh.setMatrixAt(i,m4)}
+  mesh.instanceMatrix.needsUpdate=true;
+  cam.position.x+=((mx*1.6)-cam.position.x)*.04;cam.position.y+=((3.4-my*.9)-cam.position.y)*.04;cam.lookAt(0,.9-sy*3,0);
+  host.style.opacity=String(Math.max(0,1-sy*1.15));
+  if(sy<1.2)renderer.render(scene,cam);requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+</script>
 <script>
 (function(){
-  const S=new Sheet(document.getElementById('sheet'),{cols:11,widths:[70,150,90,64,86,90,72,120,86,120,80]});
-  let LAST=null;
-  function rows(b){
-    const R=[];
-    R.push([{v:'DIVI — perpetuals on tokenized stocks that pay real dividends.',cls:'title',span:11,f:'=CONCAT("perps", " that pay dividends")',note:'The whole product is this sheet. Every number has a formula.'}]);
-    R.push([{v:'Long a stock perp and get paid like a shareholder. On every ex-dividend date the dividend moves from every short to every long, pro rata by shares — exactly like a stock loan. No treasury, no emissions: shorts fund it. Prices are a 24/7 fair value blended from the tape, Robinhood Chain pools, xStocks and futures, so it works all weekend.',cls:'sub',span:11}]);
-    R.push('spacer');
-    R.push([{v:'Ticker',cls:'hd'},{v:'Name',cls:'hd'},{v:'Mark · USD',cls:'hd r'},{v:'± bp',cls:'hd r'},{v:'Session',cls:'hd c'},{v:'Annual div',cls:'hd r'},{v:'Yield',cls:'hd r'},{v:'Next ex-date',cls:'hd'},{v:'Div / share',cls:'hd r'},{v:'$1,000 long earns',cls:'hd r'},{v:'Days to ex',cls:'hd r'}]);
-    const base=R.length;
-    b.feeds.forEach((f,i)=>{const n=base+i+1;const d=f.div||{};const nx=d.next||null;const earn=nx?1000/f.mark*nx.amount:null;
-      R.push([{v:'<a class="link" href="/feed/'+f.sym+'">'+f.sym+'</a>',cls:'b',id:'sym-'+f.sym,note:'open the feed sheet'},{v:f.name,cls:'muted'},
-        {v:fmt(f.mark),cls:'r'+(f.dir>0?' up':f.dir<0?' dn':''),f:'=WEIGHTED_MEDIAN(tape, pools, xstock, futures×β)',note:'24/7 fair value, '+f.nSrc+' sources'+(f.official?', official print '+fmt(f.official.price)+' ('+f.official.ageH.toFixed(1)+'h old)':'')},
-        {v:'±'+Math.round(f.confBps),cls:'r muted',f:'=MAX(floor, 1.5×dispersion)+staleness',note:'confidence band; fills happen at mark ± half of this'},
-        {v:sessChip(f.session),cls:'c'},
-        {v:d.annual!=null?'$'+fmt(d.annual):'—',cls:'r',f:'=SUM(last '+(d.perYear||4)+' declared dividends)',note:'per share, trailing 12 months'},
-        {v:d.yieldPct!=null?fmt(d.yieldPct)+'%':'—',cls:'r green',f:'=F'+n+'/C'+n,note:'annual dividend ÷ mark'},
-        {v:nx?fmtDate(nx.ex)+' '+(nx.confirmed?'<span class="chip g">declared</span>':'<span class="chip a">projected</span>'):'—',f:nx?'=NEXT_EX_DATE("'+f.sym+'")':'',note:nx?(nx.confirmed?'declared by the exchange; this record is signed and settles on-chain':'projected from the payout cadence; not signed until declared'):''},
-        {v:nx?'$'+fmt(nx.amount,4):'—',cls:'r',f:nx?'=DIVIDEND("'+f.sym+'", H'+n+')':''},
-        {v:earn!=null?'$'+fmt(earn):'—',cls:'r green b',f:'=1000/C'+n+'*I'+n,note:'shares a $1,000 1× long represents × dividend per share. At 10× it is ten times this.'},
-        {v:d.daysToEx!=null?fmt(d.daysToEx,1):'—',cls:'r'+(d.daysToEx!=null&&d.daysToEx<7?' amber':''),f:'=H'+n+'-TODAY()'}]);
-    });
-    R.push('spacer');
-    R.push([{v:'How it works',cls:'hd',span:11}]);
-    R.push([{v:'1 · Shorts pay.',cls:'b'},{v:'A short on DIVI owes the dividend, exactly like a short seller who borrowed the shares. On the ex-date, shares × dividend is taken from the short’s margin. A short that cannot cover is closed out to the pool.',cls:'wrap',span:10}]);
-    R.push([{v:'2 · Longs receive.',cls:'b'},{v:'The same cash lands in every long’s free balance, pro rata by shares (size ÷ entry). The price gaps down on the ex-date, the cash makes the long whole. Net, a long is a shareholder.',cls:'wrap',span:10}]);
-    R.push([{v:'3 · Nobody subsidises.',cls:'b'},{v:'The LP pool is the counterparty and only carries its net exposure, which the ex-date gap offsets. Settlement is permissionless: anyone can call it against the oracle-signed dividend record and keep 1% of what shorts paid.',cls:'wrap',span:10}]);
-    R.push([{v:'4 · 24/7 prices.',cls:'b'},{v:'Each mark is a weighted median of the official tape, every Robinhood Chain pool by liquidity, the xStock on Solana and index futures × β, with a confidence band. Fills happen at mark ± half the band, so a wide Sunday band is a wide spread, as it should be.',cls:'wrap',span:10}]);
-    R.push('spacer');
-    if(b.live&&b.mint){R.push([{v:'$DIVI · CA',cls:'hd'},{v:b.mint,cls:'mono',span:8,id:'ca'},{el:btn('Copy',()=>{navigator.clipboard.writeText(b.mint);toast('CA copied')}),span:2}]);}
-    R.push([{v:'Links',cls:'hd'},{v:'<a class="link" href="/trade">Trade on-chain</a>'},{v:'<a class="link" href="/calendar">Dividend calendar</a>',span:2},{v:'<a class="link" href="/desk">Practice desk</a>'},{v:'<a class="link" href="/docs">Docs</a>'},{v:'<a class="link" href="/api/board">API</a>'},{v:'<a class="link" href="/contracts/DiviPerps.sol">DiviPerps.sol</a>',span:2},{v:'<a class="link" href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a>'}]);
-    return R;
+  const fmt=(n,d)=>(+n).toLocaleString(undefined,{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d});
+  const fmtDate=(ms)=>new Date(ms).toLocaleDateString('en-US',{timeZone:'UTC',month:'short',day:'numeric'});
+  let B=null;const rail=document.getElementById('rail');
+  function cards(b){
+    rail.innerHTML=b.feeds.map(f=>{const d=f.div||{},nx=d.next;const earn=nx?1000/f.mark*nx.amount:0;return '<a class="card" href="/feed/'+f.sym+'" data-sym="'+f.sym+'"><span class="stamp '+(nx&&nx.confirmed?'on':'')+'">'+(nx?(nx.confirmed?'declared':'projected'):'—')+'</span><div class="top"><div class="tk">'+f.sym+'</div></div><div class="nm">'+f.name+'</div><div class="mk">$'+fmt(f.mark)+'<small>±'+Math.round(f.confBps)+'bp · '+f.session.toUpperCase()+'</small></div><div class="row"><div><div class="k">Next payday</div><div class="v">'+(nx?fmtDate(nx.ex):'—')+'</div></div><div><div class="k">Per share</div><div class="v">'+(nx?'$'+fmt(nx.amount,3):'—')+'</div></div><div><div class="k">$1,000 long</div><div class="v gold">$'+fmt(earn)+'</div></div></div><div class="row" style="border:0;padding-top:12px;margin-top:8px"><div><div class="k">Yield</div><div class="v">'+(d.yieldPct!=null?fmt(d.yieldPct)+'%':'—')+'</div></div><div><div class="k">Annual / share</div><div class="v">$'+fmt(d.annual||0)+'</div></div></div></a>'}).join('');
+    rail.querySelectorAll('.card').forEach(c=>{c.addEventListener('pointermove',(e)=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform='perspective(900px) rotateY('+(x*10)+'deg) rotateX('+(-y*10)+'deg) translateY(-4px)'});c.addEventListener('pointerleave',()=>c.style.transform='')});
   }
-  function btn(label,fn,cls){const b=document.createElement('button');b.className='cellbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
-  function render(b){LAST=b;S.render(rows(b));const nx=b.feeds.map(f=>f.div&&f.div.next).filter(Boolean).sort((a,c)=>a.exTs-c.exTs)[0];document.getElementById('status').innerHTML='<b>'+b.feeds.length+'</b> names · session <b>'+b.session.toUpperCase()+'</b> · signer '+b.signer.slice(0,8)+'…'+(nx?' · next ex-date <b>'+fmtDate(nx.ex)+'</b>':'')+(b.perps?' · venue <b>live</b>':'')}
+  function payday(b){const nx=b.feeds.filter(f=>f.div&&f.div.next).map(f=>({sym:f.sym,n:f.div.next,mark:f.mark})).sort((a,c)=>a.n.exTs-c.n.exTs)[0];if(!nx)return;document.getElementById('payV').innerHTML=nx.sym+' · <em>'+fmtDate(nx.n.ex)+'</em>';document.getElementById('payS').textContent='$'+fmt(nx.n.amount,3)+' per share · '+(nx.n.confirmed?'declared':'projected')+' · a $1,000 long earns $'+fmt(1000/nx.mark*nx.n.amount)}
+  const cSym=document.getElementById('cSym'),cMar=document.getElementById('cMar'),cLev=document.getElementById('cLev');
+  function calc(){if(!B)return;const f=B.feeds.find(x=>x.sym===cSym.value)||B.feeds[0];const nx=f.div&&f.div.next;const size=+cMar.value*+cLev.value;const earn=nx?size/f.mark*nx.amount:0;document.getElementById('cSymV').textContent=f.sym;document.getElementById('cMarV').textContent='$'+fmt(cMar.value,0);document.getElementById('cLevV').textContent=cLev.value+'×';document.getElementById('calcOut').textContent='$'+fmt(earn);document.getElementById('calcSub').textContent=nx?fmt(size/f.mark,2)+' shares × $'+fmt(nx.amount,3)+' on '+fmtDate(nx.ex)+' ('+(nx.confirmed?'declared':'projected')+'). Annualised at '+f.div.perYear+' payouts: $'+fmt(earn*f.div.perYear)+' on $'+fmt(cMar.value,0)+' margin, '+fmt(earn*f.div.perYear/+cMar.value*100,1)+'%.':'No dividend record yet.'}
+  [cSym,cMar,cLev].forEach(el=>el.addEventListener('input',calc));
+  function render(b){const first=!B;B=b;if(first){cSym.innerHTML=b.feeds.map(f=>'<option value="'+f.sym+'">'+f.sym+' · '+f.name+'</option>').join('');cards(b);payday(b)}else{cards(b)}calc();if(b.live&&b.mint){document.getElementById('cabar').hidden=false;document.getElementById('ca').textContent=b.mint}}
+  document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('ca').textContent);
   function connect(){try{const es=new EventSource('/api/stream');es.onmessage=(e)=>render(JSON.parse(e.data));es.onerror=()=>{es.close();setTimeout(connect,3000)}}catch(e){fetch('/api/board').then(r=>r.json()).then(render)}}
   connect();
+  // pinned mechanism: scroll progress drives the coin
+  const pin=document.getElementById('how'),coin=document.getElementById('coin'),caps=Array.from(document.querySelectorAll('.cap')),sS=document.getElementById('sideS'),sL=document.getElementById('sideL');
+  function onScroll(){if(innerWidth<860){coin.style.transform='translateX(calc(50vw - 46px))';return}const r=pin.getBoundingClientRect();const p=Math.max(0,Math.min(1,-r.top/(r.height-innerHeight)));const track=coin.parentElement.getBoundingClientRect();const x=p*track.width;coin.style.transform='translateX('+x+'px) rotateY('+(p*720)+'deg)';caps.forEach(c=>c.classList.toggle('on',p>=+c.dataset.at&&p<+c.dataset.at+.33||(+c.dataset.at===0.66&&p>=.66)));sS.classList.toggle('hot',p<.33);sL.classList.toggle('hot',p>=.66)}
+  addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
 })();
 </script>
 </body></html>

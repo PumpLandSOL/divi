@@ -2,24 +2,21 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DIVI — docs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head><body>
-<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Docs<small>mechanism · oracle · contract · token</small></div>
-<nav class="menus"><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
-<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/">Home</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></div><button class="connect" id="connect">Connect</button></nav>
+<div class="page"><div class="head"><h1>How DIVI <em>works.</em></h1><p>The mechanism, the oracle, the contract, the API, the risks.</p></div>
 <div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Documentation.</div></div>
 <div class="sheetwrap"><div id="sheet"></div></div>
-<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><span class="status"></span></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><span class="status"></span></div></div>
 <script src="/sheet.js"></script><script src="/connect.js"></script>
 <script>
 (function(){
   const S=new Sheet(document.getElementById('sheet'),{cols:6,widths:[200,220,220,220,220,220]});
   const H=(t)=>[{v:t,cls:'hd',span:6}], P=(k,t)=>[{v:k,cls:'b'},{v:t,cls:'wrap',span:5}], M=(k,t)=>[{v:k,cls:'mono'},{v:t,cls:'wrap',span:5}];
   const R=[];
-  R.push([{v:'Docs — how DIVI works.',cls:'title',span:6}]);
-  R.push([{v:'DIVI is a perpetuals venue for tokenized stocks on Robinhood Chain with one difference from every other perp: dividends actually move. This sheet is the specification.',cls:'sub',span:6}]);
-  R.push('spacer');
+
   R.push(H('1 · The dividend mechanism'));
   R.push(P('Why perps lose dividends','On the ex-dividend date a stock gaps down by the dividend. A normal perp long eats the gap and receives nothing, so perps are quietly worse than owning the stock. A short gets the gap for free.'));
   R.push(P('What DIVI does','On the ex-date the contract moves the dividend from every short to every long, pro rata by shares. Shares = size ÷ entry. Cash = shares × dividend per share. A short’s margin is debited; a long’s free balance is credited.'));

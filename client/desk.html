@@ -2,15 +2,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DIVI — practice desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head><body>
-<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Practice desk<small>same fills, same maintenance, same dividends · practice balances</small></div>
-<nav class="menus"><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk" class="on">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
-<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/">Home</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk" class="on">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></div><button class="connect" id="connect">Connect</button></nav>
+<div class="page"><div class="head"><h1>Same rules, <em>practice balances.</em></h1><p>10,000 practice USDG. Same fills, same maintenance, same dividends on declared ex-dates.</p></div>
 <div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Fill the yellow cells, then press Open.</div></div>
 <div class="sheetwrap"><div id="sheet"></div></div>
-<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk" class="on">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk" class="on">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div></div>
 <script src="/sheet.js"></script><script src="/connect.js"></script>
 <script>
 (function(){
@@ -24,9 +23,7 @@
     const f=BOARD.find(x=>x.sym===form.sym);if(!f||!A)return;
     const fill=f.mark*(1+(form.side==='long'?1:-1)*(f.confBps/2)/1e4),notional=form.margin*form.lev,qty=notional/fill,nx=f.div&&f.div.next;
     const R=[];
-    R.push([{v:'Practice desk — 10,000 practice USDG, real rules.',cls:'title',span:10}]);
-    R.push([{v:'Fills at mark ± half the band, up to 10×, 8 bp per side, 5% maintenance. On a declared ex-date your longs are paid and your shorts pay, exactly as on-chain. Account: <span class="mono">'+who()+'</span>'+(who().startsWith('desk_')?' (local — connect a wallet to keep it)':''),cls:'sub',span:10}]);
-    R.push('spacer');
+
     R.push([{v:'Order',cls:'hd',span:10}]);
     R.push([{v:'Ticker',cls:'h'},{el:inp('sym','select'),cls:'edit',span:2},{v:'Side',cls:'h'},{el:btn(form.side==='long'?'LONG ▾':'long',()=>{form.side='long';draw()},form.side==='long'?'green':''),cls:'edit'},{el:btn(form.side==='short'?'SHORT ▾':'short',()=>{form.side='short';draw()},form.side==='short'?'red':''),cls:'edit'},{v:'Leverage',cls:'h'},{el:inp('lev'),cls:'edit'},{v:'Margin USDG',cls:'h'},{el:inp('margin'),cls:'edit'}]);
     R.push([{v:'Fill price',cls:'h'},{v:fmt(fill),cls:'r b',f:'=C_mark'+(form.side==='long'?'+':'−')+'conf/2',note:'mark '+fmt(f.mark)+' ± '+Math.round(f.confBps)+'bp, session '+f.session.toUpperCase()},{v:'Size',cls:'h'},{v:fmt(notional,0),cls:'r',f:'=margin×lev'},{v:'Shares',cls:'h'},{v:fmt(qty,4),cls:'r',f:'=size/fill'},{v:'Next dividend',cls:'h'},{v:nx?(form.side==='long'?'+':'−')+'$'+fmt(qty*nx.amount)+' on '+fmtDate(nx.ex):'—',cls:'r '+(nx?(form.side==='long'?'green':'red'):''),f:nx?'=shares×'+nx.amount:'',note:nx?(nx.confirmed?'declared':'projected'):''},{el:btn('Open',()=>post('/api/desk/open',{w:who(),sym:form.sym,side:form.side,lev:form.lev,margin:form.margin}),'primary'),span:2}]);

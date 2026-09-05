@@ -2,15 +2,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DIVI — trade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 </head><body>
-<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Trade<small>USDG perps on Robinhood Chain · dividends settle on-chain</small></div>
-<nav class="menus"><a href="/">Board</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
-<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/">Home</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></div><button class="connect" id="connect">Connect</button></nav>
+<div class="page"><div class="head"><h1>Long or short any dividend stock, <em>all weekend.</em></h1><p>USDG perps, up to 10×, filled at mark ± half the band. Every order carries a fresh oracle signature the contract verifies. On the ex-date the dividend moves.</p></div>
 <div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Every order carries a fresh oracle signature the contract verifies.</div></div>
 <div class="sheetwrap"><div id="sheet"></div></div>
-<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div></div>
 <script src="/sheet.js"></script><script src="/keccak.js"></script><script src="/connect.js"></script>
 <script>
 (function(){
@@ -29,9 +28,7 @@
     const f=BOARD.find(x=>x.sym===form.sym);if(!f)return;const s=ST||{};const me=s.me;
     const fill=f.mark*(1+(form.side==='long'?1:-1)*(f.confBps/2)/1e4),size=form.margin*form.lev,qty=size/fill,nx=f.div&&f.div.next;
     const R=[];
-    R.push([{v:'Trade — long or short any dividend stock, all weekend, and let the dividend move.',cls:'title',span:10}]);
-    R.push([{v:'USDG-collateralised perpetual positions, up to 10×, filled at mark ± half the confidence band. Every open, close, liquidation and dividend settlement carries a fresh oracle signature that the contract verifies with ecrecover. The liquidity pool is the counterparty and earns every fee.',cls:'sub',span:10}]);
-    R.push('spacer');
+
     R.push([{v:'Order',cls:'hd',span:10}]);
     R.push([{v:'Ticker',cls:'h'},{el:inp('sym','select'),cls:'edit',span:2},{v:'Side',cls:'h'},{el:btn(form.side==='long'?'LONG ▾':'long',()=>{form.side='long';draw()},form.side==='long'?'green':''),cls:'edit'},{el:btn(form.side==='short'?'SHORT ▾':'short',()=>{form.side='short';draw()},form.side==='short'?'red':''),cls:'edit'},{v:'Leverage',cls:'h'},{el:inp('lev'),cls:'edit'},{v:'Margin USDG',cls:'h'},{el:inp('margin'),cls:'edit'}]);
     R.push([{v:'Fill',cls:'h'},{v:fmt(fill),cls:'r b',f:'=mark'+(form.side==='long'?'+':'−')+'conf/2',note:'mark '+fmt(f.mark)+' ± '+Math.round(f.confBps)+'bp · '+f.session.toUpperCase()},{v:'Size',cls:'h'},{v:fmt(size,0),cls:'r'},{v:'Shares',cls:'h'},{v:fmt(qty,4),cls:'r',f:'=size/fill'},{v:'Next dividend',cls:'h'},{v:nx?(form.side==='long'?'+':'−')+'$'+fmt(qty*nx.amount)+' · '+fmtDate(nx.ex):'—',cls:'r '+(nx?(form.side==='long'?'green':'red'):''),f:nx?'=shares×'+nx.amount:''},{el:btn('Sign & open',guarded(async()=>{need();const p=await fetch('/api/feed/'+form.sym+'/evm').then(r=>r.json());await tx(ST.perps,sel('open('+PX_T+',bool,uint256,uint256)')+pxWords(p)+word(form.side==='long'?1:0)+word(U6(form.margin))+word(form.lev))}),'primary'),span:2}]);
