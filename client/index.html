@@ -165,12 +165,12 @@ footer .links a{margin-left:18px;color:var(--ink2)}
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 // ── the coin rain ──────────────────────────────────────────────────────────────
-const host=document.getElementById('stage');const mobile=innerWidth<860;
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+const host=document.getElementById('stage');const mobile=innerWidth<860;const lite=/[?&]lite/.test(location.search);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});renderer.setPixelRatio(lite?1:Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=!lite;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xf6f3ee);scene.fog=new THREE.Fog(0xf6f3ee,14,30);
 const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
 const cam=new THREE.PerspectiveCamera(32,innerWidth/innerHeight,.1,100);cam.position.set(0,3.4,11);
-const key=new THREE.DirectionalLight(0xfff2d6,2.6);key.position.set(5,9,6);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-9;key.shadow.camera.right=9;key.shadow.camera.top=9;key.shadow.camera.bottom=-9;key.shadow.radius=6;key.shadow.bias=-0.0005;scene.add(key);
+const key=new THREE.DirectionalLight(0xfff2d6,2.6);key.position.set(5,9,6);key.castShadow=true;key.shadow.mapSize.set(lite?512:2048,lite?512:2048);key.shadow.camera.left=-9;key.shadow.camera.right=9;key.shadow.camera.top=9;key.shadow.camera.bottom=-9;key.shadow.radius=6;key.shadow.bias=-0.0005;scene.add(key);
 scene.add(new THREE.HemisphereLight(0xffffff,0xd9cbb0,.9));
 const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.ShadowMaterial({opacity:.22}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
 // coin: bevelled cylinder + embossed "$" face texture
@@ -178,7 +178,7 @@ const face=(()=>{const c=document.createElement('canvas');c.width=c.height=512;c
 const gold=new THREE.MeshStandardMaterial({color:0xe2bd4f,metalness:1,roughness:.32,envMapIntensity:1.1});
 const goldFace=new THREE.MeshStandardMaterial({map:face,metalness:1,roughness:.36,envMapIntensity:1.1});
 const geo=new THREE.CylinderGeometry(.62,.62,.13,56,1,false);
-const N=mobile?60:150;const mesh=new THREE.InstancedMesh(geo,[gold,goldFace,goldFace],N);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+const N=lite?70:mobile?60:150;const mesh=new THREE.InstancedMesh(geo,[gold,goldFace,goldFace],N);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
 const P=[];const spread=mobile?4:6.5;const cx=mobile?0:3.2;
 function reset(i,first){P[i]={x:cx+(Math.random()-.5)*spread*2,y:first?Math.random()*14:12+Math.random()*6,z:(Math.random()-.5)*5-1,vy:0,rx:Math.random()*6.3,ry:Math.random()*6.3,rz:Math.random()*6.3,wx:(Math.random()-.5)*4,wz:(Math.random()-.5)*4,land:-1,rest:0}}
 for(let i=0;i<N;i++)reset(i,true);
