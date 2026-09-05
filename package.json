@@ -1,0 +1,9 @@
+{
+  "name": "divi",
+  "version": "1.0.0",
+  "description": "DIVI ($DIVI) — perpetuals on tokenized stocks that pay real dividends. Shorts pay it, longs receive it, on the ex-date. Robinhood Chain, USDG, 24/7.",
+  "main": "server/index.js",
+  "scripts": { "start": "node server/index.js", "e2e": "node contracts/test/anvil-e2e.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

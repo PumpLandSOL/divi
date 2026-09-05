@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIVI — dividend calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Dividend calendar<small>declared vs projected · signed records settle on-chain</small></div>
+<nav class="menus"><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar" class="on">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
+<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Click any cell.</div></div>
+<div class="sheetwrap"><div id="sheet"></div></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar" class="on">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div>
+<script src="/sheet.js"></script><script src="/connect.js"></script>
+<script>
+(function(){
+  const S=new Sheet(document.getElementById('sheet'),{cols:9,widths:[120,80,160,100,90,110,120,100,120]});
+  async function load(){
+    const j=await fetch('/api/dividends').then(r=>r.json());const t=j.t;
+    const list=Object.entries(j.dividends).filter(([s,d])=>d.next).map(([sym,d])=>Object.assign({sym},d)).sort((a,b)=>a.next.exTs-b.next.exTs);
+    const R=[];
+    R.push([{v:'Dividend calendar — every ex-date on the board.',cls:'title',span:9}]);
+    R.push([{v:'Declared = the exchange has published the ex-date and cash amount; the oracle signs that record and the contract settles it. Projected = estimated from the payout cadence until it is declared; shown so you can plan, never signed. Settlement takes effect at the 09:30 ET open of the ex-date.',cls:'sub',span:9}]);
+    R.push('spacer');
+    R.push([{v:'Ex-date',cls:'hd'},{v:'Ticker',cls:'hd'},{v:'Name',cls:'hd'},{v:'Div / share',cls:'hd r'},{v:'Status',cls:'hd c'},{v:'Pay date',cls:'hd'},{v:'Yield (annual)',cls:'hd r'},{v:'Days',cls:'hd r'},{v:'Settles on-chain',cls:'hd'}]);
+    list.forEach((d,i)=>{const n=R.length+1;const days=(d.next.exTs*1000-t)/86400e3;const passed=days<=0;
+      R.push([{v:fmtDate(d.next.ex),cls:'b'+(passed?' green':days<7?' amber':''),f:'=NEXT_EX_DATE("'+d.sym+'")',note:d.next.source},{v:'<a class="link" href="/feed/'+d.sym+'">'+d.sym+'</a>'},{v:d.name,cls:'muted'},
+        {v:'$'+fmt(d.next.amount,4),cls:'r'},{v:d.next.confirmed?'<span class="chip g">declared</span>':'<span class="chip a">projected</span>',cls:'c'},{v:d.next.pay?fmtDate(d.next.pay):'—',cls:'muted'},
+        {v:d.yieldPct!=null?fmt(d.yieldPct)+'%':'—',cls:'r green',f:'=annual/mark'},{v:fmt(days,1),cls:'r',f:'=A'+n+'-NOW()'},
+        {v:d.next.confirmed?(passed?'<span class="chip g">open for settlement</span>':'signed, waits for ex-date'):'not until declared',cls:'muted'}]);
+    });
+    R.push('spacer');R.push([{v:'History — last declared payouts',cls:'hd',span:9}]);
+    R.push([{v:'Ticker',cls:'hd'},{v:'Annual',cls:'hd r'},{v:'Per year',cls:'hd r'},{v:'Last 4 ex-dates and amounts',cls:'hd',span:6}]);
+    for(const d of list){R.push([{v:d.sym,cls:'b'},{v:'$'+fmt(d.annual),cls:'r'},{v:d.perYear,cls:'r'},{v:(d.history||[]).slice(0,4).map(h=>fmtDate(h.ex)+' · $'+fmt(h.amount,4)).join('  ·  '),cls:'mono',span:6}])}
+    S.render(R);document.getElementById('status').innerHTML='<b>'+list.length+'</b> names · '+list.filter(d=>d.next.confirmed).length+' declared · '+list.filter(d=>!d.next.confirmed).length+' projected';
+  }
+  load();setInterval(load,60000);
+})();
+</script>
+</body></html>

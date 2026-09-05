@@ -1,0 +1,83 @@
+/* DIVI — the whole product is a spreadsheet. Light workbook chrome, gridlines, a formula bar that explains every number. */
+:root{--bg:#f1f3f4;--paper:#fff;--line:#e0e3e7;--line2:#c6cbd1;--ink:#202124;--ink2:#3c4043;--muted:#5f6368;--blue:#1a73e8;--blue2:#e8f0fe;--green:#137333;--greenfill:#e6f4ea;--green2:#1e8e3e;--red:#c5221f;--redfill:#fce8e6;--amber:#b06000;--amberfill:#fef7e0;--head:#f8f9fa;--sel:#1a73e8;
+  --ui:'Roboto',Arial,Helvetica,sans-serif;--mono:'Roboto Mono',Consolas,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:light}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:13px;line-height:1.4;min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+/* ── workbook chrome ── */
+.titlebar{background:var(--paper);display:flex;align-items:center;gap:12px;padding:8px 16px 0;border-bottom:1px solid var(--line)}
+.titlebar .icon{width:28px;height:36px;border-radius:3px;background:var(--green2);position:relative;flex:none}
+.titlebar .icon::before{content:"";position:absolute;left:6px;right:6px;top:9px;height:18px;background:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 6px),repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 8px);opacity:.9}
+.titlebar .doc{flex:1;min-width:0}
+.titlebar .doc .name{font-size:18px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.titlebar .doc .name b{font-weight:500}
+.titlebar .doc .name small{font-size:13px;color:var(--muted);margin-left:8px}
+.menus{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap}
+.menus a{color:var(--ink);padding:3px 8px;border-radius:4px;font-size:14px}
+.menus a:hover,.menus a.on{background:#e8eaed;text-decoration:none}
+.menus a.on{font-weight:500}
+.titlebar .right{display:flex;align-items:center;gap:10px;flex:none}
+.share{background:#c2e7ff;color:#001d35;border-radius:20px;padding:8px 18px;font-weight:500;font-size:14px;cursor:pointer;border:0;font-family:var(--ui)}
+.share.live{background:var(--greenfill);color:var(--green)}
+.share:hover{filter:brightness(.97)}
+.fxbar{background:var(--paper);display:flex;align-items:stretch;border-bottom:1px solid var(--line);font-size:13px;min-height:30px}
+.fxbar .box{width:90px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);font-family:var(--mono);color:var(--ink2);font-size:12px}
+.fxbar .fx{width:40px;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-style:italic;font-family:Georgia,serif;border-right:1px solid var(--line)}
+.fxbar .formula{flex:1;display:flex;align-items:center;padding:0 12px;font-family:var(--mono);font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fxbar .formula i{font-style:normal;color:var(--muted);font-family:var(--ui);margin-left:12px}
+/* ── grid ── */
+.sheetwrap{flex:1;overflow:auto;background:var(--paper);position:relative}
+table.grid{border-collapse:collapse;table-layout:fixed;min-width:100%;font-variant-numeric:tabular-nums}
+table.grid th{background:var(--head);color:var(--muted);font-weight:400;font-size:11px;text-align:center;border:1px solid var(--line2);height:22px;position:sticky;top:0;z-index:3;user-select:none}
+table.grid th.rn{width:44px;left:0;z-index:4}
+table.grid td.rn{background:var(--head);color:var(--muted);font-size:11px;text-align:center;border:1px solid var(--line2);position:sticky;left:0;z-index:2;user-select:none}
+table.grid td{border:1px solid var(--line);height:26px;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;cursor:cell;background:var(--paper)}
+table.grid td.r{text-align:right}
+table.grid td.c{text-align:center}
+table.grid td.b{font-weight:500}
+table.grid td.h{background:var(--head);font-weight:500;color:var(--ink2)}
+table.grid td.hd{background:#e8eaed;font-weight:500;border-bottom:2px solid var(--line2)}
+table.grid td.green{background:var(--greenfill);color:var(--green)}
+table.grid td.red{background:var(--redfill);color:var(--red)}
+table.grid td.amber{background:var(--amberfill);color:var(--amber)}
+table.grid td.blue{background:var(--blue2)}
+table.grid td.up{color:var(--green)}
+table.grid td.dn{color:var(--red)}
+table.grid td.muted{color:var(--muted)}
+table.grid td.mono{font-family:var(--mono);font-size:12px}
+table.grid td.title{font-size:22px;font-weight:500;height:44px;overflow:visible}
+table.grid td.sub{font-size:14px;color:var(--ink2);height:32px;overflow:visible;white-space:normal;line-height:1.35}
+table.grid td.wrap{white-space:normal;line-height:1.35;height:auto;padding:6px 8px}
+table.grid td.sel{outline:2px solid var(--sel);outline-offset:-2px;box-shadow:inset 0 0 0 1px #fff;position:relative}
+table.grid td.sel::after{content:"";position:absolute;right:-1px;bottom:-1px;width:6px;height:6px;background:var(--sel);border:1px solid #fff}
+table.grid td a.link{color:var(--blue)}
+table.grid td .chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:500}
+table.grid td .chip.g{background:var(--greenfill);color:var(--green)}
+table.grid td .chip.a{background:var(--amberfill);color:var(--amber)}
+table.grid td .chip.r{background:var(--redfill);color:var(--red)}
+table.grid td .chip.b{background:var(--blue2);color:var(--blue)}
+table.grid tr.spacer td{height:12px;border-left:0;border-right:0}
+table.grid td input,table.grid td select{width:100%;height:100%;border:0;background:transparent;font:13px var(--ui);color:var(--ink);outline:none;padding:0}
+table.grid td.edit{background:#fffde7}
+table.grid td button.cellbtn{width:100%;height:22px;border:1px solid var(--line2);background:#fff;border-radius:4px;font:12px var(--ui);cursor:pointer;color:var(--ink)}
+table.grid td button.cellbtn.primary{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:500}
+table.grid td button.cellbtn.green{background:var(--green2);color:#fff;border-color:var(--green2);font-weight:500}
+table.grid td button.cellbtn.red{background:#d93025;color:#fff;border-color:#d93025;font-weight:500}
+table.grid td button.cellbtn:hover{filter:brightness(.95)}
+table.grid td button.cellbtn:disabled{opacity:.5;cursor:default}
+table.grid td.bar{padding:0}
+table.grid td .barfill{height:100%;display:flex;align-items:center;padding:0 6px;color:#fff;font-size:11px;min-width:2px;background:var(--green2)}
+/* ── sheet tabs (bottom) ── */
+.tabs{background:var(--head);border-top:1px solid var(--line);display:flex;align-items:center;gap:0;padding:0 8px;height:36px;font-size:13px;flex:none;position:sticky;bottom:0;z-index:5}
+.tabs .plus{width:30px;text-align:center;color:var(--muted);font-size:18px;line-height:1}
+.tabs a{color:var(--ink2);padding:0 16px;height:36px;display:flex;align-items:center;border-right:1px solid var(--line);white-space:nowrap}
+.tabs a:hover{background:#e8eaed;text-decoration:none}
+.tabs a.on{background:var(--paper);color:var(--green);font-weight:500;border-bottom:2px solid var(--green2)}
+.tabs .status{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap;padding-right:8px}
+.tabs .status b{color:var(--ink2);font-weight:500}
+@media(max-width:720px){.titlebar .doc .name small{display:none}.share{padding:6px 12px;font-size:13px}.tabs a{padding:0 10px}.tabs .status{display:none}}
+/* toast */
+.toast{position:fixed;left:50%;bottom:52px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 18px;border-radius:4px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transition:opacity .2s;z-index:50;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+.toast.err{background:#d93025}

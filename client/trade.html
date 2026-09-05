@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIVI — trade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Trade<small>USDG perps on Robinhood Chain · dividends settle on-chain</small></div>
+<nav class="menus"><a href="/">Board</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
+<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Every order carries a fresh oracle signature the contract verifies.</div></div>
+<div class="sheetwrap"><div id="sheet"></div></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade" class="on">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div>
+<script src="/sheet.js"></script><script src="/keccak.js"></script><script src="/connect.js"></script>
+<script>
+(function(){
+  const S=new Sheet(document.getElementById('sheet'),{cols:10,widths:[120,110,90,90,90,90,100,120,110,90]});
+  let BOARD=[],ST=null,DIVS={},form={sym:'AAPL',side:'long',lev:3,margin:100,amt:100,lp:100};
+  const sel=(sig)=>'0x'+keccak256(sig).slice(0,8),word=(v)=>BigInt(v).toString(16).padStart(64,'0'),hexw=(h)=>h.replace('0x','').padStart(64,'0'),addrw=(a)=>a.toLowerCase().replace('0x','').padStart(64,'0'),U6=(x)=>BigInt(Math.round(+x*1e6));
+  const PX_T='(bytes32,int64,uint64,uint64,uint8,bytes32,bytes32)',DV_T='(bytes32,int64,uint64,bytes32,bytes32)';
+  const pxWords=(p)=>hexw(p.sym32)+word(p.price)+word(p.conf)+word(p.ts)+word(p.session)+hexw(p.r)+hexw(p.s);
+  const dvWords=(d)=>hexw(d.sym32)+word(d.amount)+word(d.exTs)+hexw(d.r)+hexw(d.s);
+  async function tx(to,data){if(!window.WALLET){await window.connectWallet();if(!window.WALLET)throw new Error('connect a wallet')}const h=await window.ethereum.request({method:'eth_sendTransaction',params:[{from:window.WALLET,to,data}]});toast('tx sent · waiting…');for(let i=0;i<60;i++){await new Promise(r=>setTimeout(r,2000));const rc=await window.ethereum.request({method:'eth_getTransactionReceipt',params:[h]});if(rc){toast((rc.status==='0x1'?'confirmed ':'REVERTED ')+h.slice(0,14)+'…',rc.status!=='0x1');return rc}}throw new Error('timeout waiting for receipt')}
+  const guarded=(fn)=>async()=>{try{await fn();await refresh()}catch(e){toast((e&&e.message)||String(e),true)}};
+  function inp(key,type){const i=document.createElement(type==='select'?'select':'input');if(type==='select'){i.innerHTML=BOARD.map(f=>'<option value="'+f.sym+'"'+(f.sym===form.sym?' selected':'')+'>'+f.sym+' · '+f.name+'</option>').join('')}else{i.type='number';i.value=form[key];i.min=key==='lev'?1:1;if(key==='lev')i.max=10}i.onchange=()=>{form[key]=type==='select'?i.value:+i.value;draw()};return i}
+  function btn(label,fn,cls){const b=document.createElement('button');b.className='cellbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
+  const need=()=>{if(!ST||!ST.deployed)throw new Error('connect a wallet on Robinhood Chain');};
+  function draw(){
+    const f=BOARD.find(x=>x.sym===form.sym);if(!f)return;const s=ST||{};const me=s.me;
+    const fill=f.mark*(1+(form.side==='long'?1:-1)*(f.confBps/2)/1e4),size=form.margin*form.lev,qty=size/fill,nx=f.div&&f.div.next;
+    const R=[];
+    R.push([{v:'Trade — long or short any dividend stock, all weekend, and let the dividend move.',cls:'title',span:10}]);
+    R.push([{v:'USDG-collateralised perpetual positions, up to 10×, filled at mark ± half the confidence band. Every open, close, liquidation and dividend settlement carries a fresh oracle signature that the contract verifies with ecrecover. The liquidity pool is the counterparty and earns every fee.',cls:'sub',span:10}]);
+    R.push('spacer');
+    R.push([{v:'Order',cls:'hd',span:10}]);
+    R.push([{v:'Ticker',cls:'h'},{el:inp('sym','select'),cls:'edit',span:2},{v:'Side',cls:'h'},{el:btn(form.side==='long'?'LONG ▾':'long',()=>{form.side='long';draw()},form.side==='long'?'green':''),cls:'edit'},{el:btn(form.side==='short'?'SHORT ▾':'short',()=>{form.side='short';draw()},form.side==='short'?'red':''),cls:'edit'},{v:'Leverage',cls:'h'},{el:inp('lev'),cls:'edit'},{v:'Margin USDG',cls:'h'},{el:inp('margin'),cls:'edit'}]);
+    R.push([{v:'Fill',cls:'h'},{v:fmt(fill),cls:'r b',f:'=mark'+(form.side==='long'?'+':'−')+'conf/2',note:'mark '+fmt(f.mark)+' ± '+Math.round(f.confBps)+'bp · '+f.session.toUpperCase()},{v:'Size',cls:'h'},{v:fmt(size,0),cls:'r'},{v:'Shares',cls:'h'},{v:fmt(qty,4),cls:'r',f:'=size/fill'},{v:'Next dividend',cls:'h'},{v:nx?(form.side==='long'?'+':'−')+'$'+fmt(qty*nx.amount)+' · '+fmtDate(nx.ex):'—',cls:'r '+(nx?(form.side==='long'?'green':'red'):''),f:nx?'=shares×'+nx.amount:''},{el:btn('Sign & open',guarded(async()=>{need();const p=await fetch('/api/feed/'+form.sym+'/evm').then(r=>r.json());await tx(ST.perps,sel('open('+PX_T+',bool,uint256,uint256)')+pxWords(p)+word(form.side==='long'?1:0)+word(U6(form.margin))+word(form.lev))}),'primary'),span:2}]);
+    R.push('spacer');
+    R.push([{v:'Collateral',cls:'hd',span:5},{v:'Liquidity pool · counterparty',cls:'hd',span:5}]);
+    R.push([{v:'Wallet USDG',cls:'h'},{v:me?fmt(me.usdg):'connect',cls:'r'},{v:'Free',cls:'h'},{v:me?fmt(me.free):'—',cls:'r b'},{v:'',cls:''},{v:'Pool',cls:'h'},{v:s.deployed?fmt(s.pool)+' USDG':'—',cls:'r'},{v:'Open interest',cls:'h'},{v:s.deployed?fmt(s.openInterest):'—',cls:'r'},{v:'Fee '+(s.feeBps||8)+' bp',cls:'muted'}]);
+    R.push([{v:'Amount',cls:'h'},{el:inp('amt'),cls:'edit'},{el:btn('Approve',guarded(async()=>{need();await tx(ST.usdg,sel('approve(address,uint256)')+addrw(ST.perps)+word(U6(form.amt)))}))},{el:btn('Deposit',guarded(async()=>{need();await tx(ST.perps,sel('deposit(uint256)')+word(U6(form.amt)))}),'primary')},{el:btn('Withdraw',guarded(async()=>{need();await tx(ST.perps,sel('withdraw(uint256)')+word(U6(form.amt)))}))},{v:'Your share',cls:'h'},{v:me&&s.totalShares>0?fmt(me.shares/s.totalShares*s.pool)+' USDG':'0',cls:'r'},{el:inp('lp'),cls:'edit'},{el:btn('Provide',guarded(async()=>{need();await tx(ST.usdg,sel('approve(address,uint256)')+addrw(ST.perps)+word(U6(form.lp)));await tx(ST.perps,sel('provide(uint256)')+word(U6(form.lp)))}),'green')},{el:btn('Redeem all',guarded(async()=>{need();await tx(ST.perps,sel('redeem(uint256)')+word(BigInt(Math.floor(me.shares*1e6))))}))}]);
+    R.push('spacer');
+    R.push([{v:'Open positions',cls:'hd',span:10}]);
+    R.push([{v:'#',cls:'hd'},{v:'Ticker',cls:'hd'},{v:'Side',cls:'hd'},{v:'Size',cls:'hd r'},{v:'Entry',cls:'hd r'},{v:'Mark',cls:'hd r'},{v:'PnL',cls:'hd r'},{v:'Next dividend',cls:'hd r'},{v:'Shares',cls:'hd r'},{v:'',cls:'hd'}]);
+    const open=me?me.positions.filter(p=>p.status===0):[];if(!open.length)R.push([{v:me?'no open positions':'connect a wallet to see positions',cls:'muted',span:10}]);
+    for(const p of open){const ff=BOARD.find(x=>x.sym===p.sym);const pnl=ff?(ff.mark-p.entry)/p.entry*p.size*(p.isLong?1:-1):0;const q=p.size/p.entry;const dn=ff&&ff.div&&ff.div.next;R.push([{v:p.id},{v:p.sym,cls:'b'},{v:'<span class="chip '+(p.isLong?'g':'r')+'">'+(p.isLong?'long':'short')+'</span>'},{v:fmt(p.size,0),cls:'r'},{v:fmt(p.entry),cls:'r'},{v:ff?fmt(ff.mark):'—',cls:'r'},{v:(pnl>=0?'+':'')+fmt(pnl),cls:'r '+(pnl>=0?'up':'dn')},{v:dn?(p.isLong?'+':'−')+'$'+fmt(q*dn.amount)+' · '+fmtDate(dn.ex):'—',cls:'r '+(dn?(p.isLong?'green':'red'):''),f:'=shares×dividend'},{v:fmt(q,4),cls:'r',f:'=size/entry'},{el:btn('Close',guarded(async()=>{const px=await fetch('/api/feed/'+p.sym+'/evm').then(r=>r.json());await tx(ST.perps,sel('close(uint256,'+PX_T+')')+word(p.id)+pxWords(px))}))}])}
+    R.push('spacer');
+    R.push([{v:'Dividend settlement',cls:'hd',span:10}]);
+    R.push([{v:'Anyone can settle a declared dividend once its ex-date has passed. Shorts pay, longs receive, the settler keeps 1% of what was collected.',cls:'sub',span:10}]);
+    const dl=Object.entries(DIVS).filter(([,d])=>d.next&&d.next.confirmed);
+    if(!dl.length)R.push([{v:'no declared records right now',cls:'muted',span:10}]);
+    for(const [sym,d] of dl){const passed=Date.now()>=d.next.exTs*1000;R.push([{v:sym,cls:'b'},{v:fmtDate(d.next.ex)},{v:'$'+fmt(d.next.amount,4),cls:'r'},{v:passed?'<span class="chip g">settleable</span>':'<span class="chip b">waits for ex-date</span>',span:2},{el:btn('Settle on-chain',guarded(async()=>{need();const dv=await fetch('/api/dividend/'+sym+'/evm').then(r=>r.json());if(dv.error)throw new Error(dv.error);const n=await fetch('/api/perps/state').then(r=>r.json());await tx(ST.perps,sel('settleDividend('+DV_T+',uint256,uint256)')+dvWords(dv)+word(0)+word(1000))}),passed?'primary':''),span:2},{v:me?'received $'+fmt(me.dividendsReceived)+' · paid $'+fmt(me.dividendsPaid):'',cls:'muted',span:3}])}
+    R.push('spacer');
+    R.push([{v:'Liquidations',cls:'hd',span:2},{v:(s.liquidatable&&s.liquidatable.length)?'':'No position is under maintenance right now.',cls:'muted',span:8}]);
+    for(const l of (s.liquidatable||[]))R.push([{v:'#'+l.id},{v:l.sym},{el:btn('Liquidate',guarded(async()=>{const px=await fetch('/api/feed/'+l.sym+'/evm').then(r=>r.json());await tx(ST.perps,sel('liquidate(uint256,'+PX_T+')')+word(l.id)+pxWords(px))}),'red'),span:2}]);
+    R.push('spacer');
+    R.push([{v:'Contract',cls:'h'},{v:s.deployed?'<a class="link" href="/contracts/DiviPerps.sol">'+s.perps+'</a>':'<a class="link" href="/contracts/DiviPerps.sol">DiviPerps.sol</a>',cls:'mono',span:4},{v:'USDG',cls:'h'},{v:s.usdg||'',cls:'mono',span:2},{v:'Signer',cls:'h'},{v:s.signer?s.signer.slice(0,12)+'…':'',cls:'mono'}]);
+    S.render(R);document.getElementById('status').innerHTML=(s.deployed?'venue <b>live</b> · pool <b>'+fmt(s.pool,0)+'</b> USDG':'venue: connect wallet')+(me?' · free <b>'+fmt(me.free)+'</b>':'');
+  }
+  async function refresh(){const b=await fetch('/api/board').then(r=>r.json());BOARD=b.feeds;DIVS=(await fetch('/api/dividends').then(r=>r.json())).dividends;ST=await fetch('/api/perps/state?w='+(window.WALLET||'')).then(r=>r.json());draw()}
+  document.addEventListener('wallet',refresh);refresh();setInterval(refresh,8000);
+})();
+</script>
+</body></html>

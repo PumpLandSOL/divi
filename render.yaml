@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: divi
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server/index.js
+    autoDeploy: true
+    envVars:
+      # DIVI_MINT   — the $DIVI token CA once launched (lights the CA row)
+      # DIVI_PERPS  — deployed DiviPerps.sol address (turns the Trade sheet live)
+      # DIVI_EVM_KEY / DIVI_SIGNER_PRIV — keep the oracle signers stable across deploys (print with: node -e "const d=require('./data.json');console.log(d.evm, d.signer.priv)")
+      - key: NODE_VERSION
+        value: "20"

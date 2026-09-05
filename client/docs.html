@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIVI — docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Docs<small>mechanism · oracle · contract · token</small></div>
+<nav class="menus"><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
+<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Documentation.</div></div>
+<div class="sheetwrap"><div id="sheet"></div></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs" class="on">Docs</a><span class="status"></span></div>
+<script src="/sheet.js"></script><script src="/connect.js"></script>
+<script>
+(function(){
+  const S=new Sheet(document.getElementById('sheet'),{cols:6,widths:[200,220,220,220,220,220]});
+  const H=(t)=>[{v:t,cls:'hd',span:6}], P=(k,t)=>[{v:k,cls:'b'},{v:t,cls:'wrap',span:5}], M=(k,t)=>[{v:k,cls:'mono'},{v:t,cls:'wrap',span:5}];
+  const R=[];
+  R.push([{v:'Docs — how DIVI works.',cls:'title',span:6}]);
+  R.push([{v:'DIVI is a perpetuals venue for tokenized stocks on Robinhood Chain with one difference from every other perp: dividends actually move. This sheet is the specification.',cls:'sub',span:6}]);
+  R.push('spacer');
+  R.push(H('1 · The dividend mechanism'));
+  R.push(P('Why perps lose dividends','On the ex-dividend date a stock gaps down by the dividend. A normal perp long eats the gap and receives nothing, so perps are quietly worse than owning the stock. A short gets the gap for free.'));
+  R.push(P('What DIVI does','On the ex-date the contract moves the dividend from every short to every long, pro rata by shares. Shares = size ÷ entry. Cash = shares × dividend per share. A short’s margin is debited; a long’s free balance is credited.'));
+  R.push(P('Why it is fair','This is how stock lending works: the short seller owes the dividend to the lender. Long: loses the gap, receives the cash, net a shareholder. Short: gains the gap, pays the cash, net a real short. The LP pool is the counterparty and only carries its net exposure, which the gap offsets. Nothing is minted or subsidised.'));
+  R.push(P('Shorts that cannot cover','If the dividend exceeds a short’s remaining margin, all remaining margin is taken and the position is closed out to the pool.'));
+  R.push(P('Who settles','Anyone. settleDividend(record, from, to) walks positions [from, to) once per (symbol, ex-date) and pays the caller settleBountyBps (1%) of what shorts paid. Records can be settled from the ex-date until 45 days after.'));
+  R.push('spacer');
+  R.push(H('2 · The dividend record'));
+  R.push(P('Declared','The exchange has published the ex-date and cash amount. The oracle signs sha256("DIVIdiv1" ‖ symbol ‖ amount·1e8 ‖ exTs) with its secp256k1 key; the contract verifies with ecrecover. Only declared records are signed.'));
+  R.push(P('Projected','When the last declared ex-date has passed and the next is not yet declared, the board shows a projection from the payout cadence so you can plan. It is never signed and never settles.'));
+  R.push(P('exTs','The ex-date takes effect at the 09:30 ET open, encoded as exTs = ex-date 00:00 UTC + 13.5h. Positions opened at or after exTs do not participate in that record.'));
+  R.push('spacer');
+  R.push(H('3 · Prices, 24/7'));
+  R.push(P('Regimes','OPEN 09:30–16:00 ET: mark = official tape. PRE/POST: extended prints + pools + xStocks + futures proxy. CLOSED (nights, weekends, holidays): pools + xStocks + futures proxy, official close decays over 72h.'));
+  R.push(P('Sources','Official tape and extended-hours print; every Robinhood Chain pool where the tokenized stock is the base token (weighted by liquidity, halved if no trade in the last hour); the Backed xStock on Solana; index futures (ES for broad names, NQ for tech) × a β regressed from three months of daily returns.'));
+  R.push(P('Blend','Preliminary weighted median; sources more than 800 bp away are rejected and reported; final mark is the weighted median of the survivors. Confidence = max(floor, 1.5 × weighted mean absolute deviation) + min(150, 3 × hours since the close). Floors 5 / 15 / 25 bp for open / extended / closed.'));
+  R.push(P('Fills','mark ± conf/2. Longs pay up, shorts sell down. A wide weekend band is a wide spread, which is the honest cost of trading a closed market.'));
+  R.push('spacer');
+  R.push(H('4 · The contract · DiviPerps.sol'));
+  R.push(M('deposit / withdraw','USDG collateral in and out of your free balance.'));
+  R.push(M('provide / redeem','Become the counterparty. LPs earn 8 bp per side, liquidation remainders, and carry the net dividend flow. Redemption is blocked while the pool is needed to back open interest (pool ≥ OI ÷ 4).'));
+  R.push(M('open(Px, isLong, margin, lev)','Px is the signed price {sym, price·1e8, conf·1e8, ts, session, r, s}; valid for 90 s. Leverage 1–10×. Size = margin × lev. Fee 8 bp of size.'));
+  R.push(M('close(id, Px)','Exit at the opposite side of the band. PnL settles against the pool; the pool can never owe more than it holds.'));
+  R.push(M('liquidate(id, Px)','Anyone, when margin + PnL ≤ 5% of size. 20% of remaining margin to the liquidator, the rest to the pool.'));
+  R.push(M('settleDividend(Div, from, to)','Div is the signed record {sym, amount·1e8, exTs, r, s}. See section 1.'));
+  R.push(M('views','positions(id), idsOf(user), free(user), dividendsReceived(user), dividendsPaid(user), totalDividends, liquidatable(id, price), sharesOf(pos).'));
+  R.push('spacer');
+  R.push(H('5 · API'));
+  R.push(M('GET /api/board','Every name: mark, band, session, official print and age, dividend summary (annual, yield, next ex-date, amount, declared/projected).'));
+  R.push(M('GET /api/stream','Server-sent events, the board every 4 s.'));
+  R.push(M('GET /api/feed/:SYM','Sources with weights and deviations, rejected sources, β, dividend detail, history.'));
+  R.push(M('GET /api/feed/:SYM/evm','The signed price struct for the contract.'));
+  R.push(M('GET /api/dividends · /api/dividend/:SYM','Calendar and per-name records. /api/dividend/:SYM/evm returns the signed Div struct for a declared record.'));
+  R.push(M('GET /api/perps/state?w=','Venue state and your positions. GET /api/config for addresses and parameters.'));
+  R.push('spacer');
+  R.push(H('6 · $DIVI'));
+  R.push(P('Utility','Utility token on Robinhood Chain. It is not a claim on the venue, the pool, or any dividend flow. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate.'));
+  R.push('spacer');
+  R.push(H('7 · Risk'));
+  R.push(P('Read this','Leverage liquidates. A mark is an estimate with a stated confidence band, not a promise that any venue trades there. Dividend amounts are exchange-declared but the payer can change them. The pool is the counterparty and can lose. Nothing here is investment advice.'));
+  S.render(R);
+})();
+</script>
+</body></html>

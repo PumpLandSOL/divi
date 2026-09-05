@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIVI — perps that pay dividends</title>
+<meta name="description" content="Perpetuals on tokenized stocks on Robinhood Chain where the dividend actually moves: shorts pay it, longs receive it, on the ex-date, 24/7.">
+<meta property="og:title" content="DIVI — perps that pay dividends"><meta property="og:description" content="Long a tokenized stock perp, get paid like a shareholder. Shorts pay the dividend, longs receive it. Robinhood Chain, USDG, 24/7."><meta property="og:image" content="/brand/divi-banner.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · Perps that pay dividends<small>Robinhood Chain · USDG · 24/7</small></div>
+<nav class="menus"><a href="/" class="on">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a><a href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a></nav></div>
+<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Click any cell to see how it is computed.</div></div>
+<div class="sheetwrap"><div id="sheet"></div></div>
+<div class="tabs"><span class="plus">+</span><a href="/" class="on">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status">connecting…</span></div>
+<script src="/sheet.js"></script><script src="/connect.js"></script>
+<script>
+(function(){
+  const S=new Sheet(document.getElementById('sheet'),{cols:11,widths:[70,150,90,64,86,90,72,120,86,120,80]});
+  let LAST=null;
+  function rows(b){
+    const R=[];
+    R.push([{v:'DIVI — perpetuals on tokenized stocks that pay real dividends.',cls:'title',span:11,f:'=CONCAT("perps", " that pay dividends")',note:'The whole product is this sheet. Every number has a formula.'}]);
+    R.push([{v:'Long a stock perp and get paid like a shareholder. On every ex-dividend date the dividend moves from every short to every long, pro rata by shares — exactly like a stock loan. No treasury, no emissions: shorts fund it. Prices are a 24/7 fair value blended from the tape, Robinhood Chain pools, xStocks and futures, so it works all weekend.',cls:'sub',span:11}]);
+    R.push('spacer');
+    R.push([{v:'Ticker',cls:'hd'},{v:'Name',cls:'hd'},{v:'Mark · USD',cls:'hd r'},{v:'± bp',cls:'hd r'},{v:'Session',cls:'hd c'},{v:'Annual div',cls:'hd r'},{v:'Yield',cls:'hd r'},{v:'Next ex-date',cls:'hd'},{v:'Div / share',cls:'hd r'},{v:'$1,000 long earns',cls:'hd r'},{v:'Days to ex',cls:'hd r'}]);
+    const base=R.length;
+    b.feeds.forEach((f,i)=>{const n=base+i+1;const d=f.div||{};const nx=d.next||null;const earn=nx?1000/f.mark*nx.amount:null;
+      R.push([{v:'<a class="link" href="/feed/'+f.sym+'">'+f.sym+'</a>',cls:'b',id:'sym-'+f.sym,note:'open the feed sheet'},{v:f.name,cls:'muted'},
+        {v:fmt(f.mark),cls:'r'+(f.dir>0?' up':f.dir<0?' dn':''),f:'=WEIGHTED_MEDIAN(tape, pools, xstock, futures×β)',note:'24/7 fair value, '+f.nSrc+' sources'+(f.official?', official print '+fmt(f.official.price)+' ('+f.official.ageH.toFixed(1)+'h old)':'')},
+        {v:'±'+Math.round(f.confBps),cls:'r muted',f:'=MAX(floor, 1.5×dispersion)+staleness',note:'confidence band; fills happen at mark ± half of this'},
+        {v:sessChip(f.session),cls:'c'},
+        {v:d.annual!=null?'$'+fmt(d.annual):'—',cls:'r',f:'=SUM(last '+(d.perYear||4)+' declared dividends)',note:'per share, trailing 12 months'},
+        {v:d.yieldPct!=null?fmt(d.yieldPct)+'%':'—',cls:'r green',f:'=F'+n+'/C'+n,note:'annual dividend ÷ mark'},
+        {v:nx?fmtDate(nx.ex)+' '+(nx.confirmed?'<span class="chip g">declared</span>':'<span class="chip a">projected</span>'):'—',f:nx?'=NEXT_EX_DATE("'+f.sym+'")':'',note:nx?(nx.confirmed?'declared by the exchange; this record is signed and settles on-chain':'projected from the payout cadence; not signed until declared'):''},
+        {v:nx?'$'+fmt(nx.amount,4):'—',cls:'r',f:nx?'=DIVIDEND("'+f.sym+'", H'+n+')':''},
+        {v:earn!=null?'$'+fmt(earn):'—',cls:'r green b',f:'=1000/C'+n+'*I'+n,note:'shares a $1,000 1× long represents × dividend per share. At 10× it is ten times this.'},
+        {v:d.daysToEx!=null?fmt(d.daysToEx,1):'—',cls:'r'+(d.daysToEx!=null&&d.daysToEx<7?' amber':''),f:'=H'+n+'-TODAY()'}]);
+    });
+    R.push('spacer');
+    R.push([{v:'How it works',cls:'hd',span:11}]);
+    R.push([{v:'1 · Shorts pay.',cls:'b'},{v:'A short on DIVI owes the dividend, exactly like a short seller who borrowed the shares. On the ex-date, shares × dividend is taken from the short’s margin. A short that cannot cover is closed out to the pool.',cls:'wrap',span:10}]);
+    R.push([{v:'2 · Longs receive.',cls:'b'},{v:'The same cash lands in every long’s free balance, pro rata by shares (size ÷ entry). The price gaps down on the ex-date, the cash makes the long whole. Net, a long is a shareholder.',cls:'wrap',span:10}]);
+    R.push([{v:'3 · Nobody subsidises.',cls:'b'},{v:'The LP pool is the counterparty and only carries its net exposure, which the ex-date gap offsets. Settlement is permissionless: anyone can call it against the oracle-signed dividend record and keep 1% of what shorts paid.',cls:'wrap',span:10}]);
+    R.push([{v:'4 · 24/7 prices.',cls:'b'},{v:'Each mark is a weighted median of the official tape, every Robinhood Chain pool by liquidity, the xStock on Solana and index futures × β, with a confidence band. Fills happen at mark ± half the band, so a wide Sunday band is a wide spread, as it should be.',cls:'wrap',span:10}]);
+    R.push('spacer');
+    if(b.live&&b.mint){R.push([{v:'$DIVI · CA',cls:'hd'},{v:b.mint,cls:'mono',span:8,id:'ca'},{el:btn('Copy',()=>{navigator.clipboard.writeText(b.mint);toast('CA copied')}),span:2}]);}
+    R.push([{v:'Links',cls:'hd'},{v:'<a class="link" href="/trade">Trade on-chain</a>'},{v:'<a class="link" href="/calendar">Dividend calendar</a>',span:2},{v:'<a class="link" href="/desk">Practice desk</a>'},{v:'<a class="link" href="/docs">Docs</a>'},{v:'<a class="link" href="/api/board">API</a>'},{v:'<a class="link" href="/contracts/DiviPerps.sol">DiviPerps.sol</a>',span:2},{v:'<a class="link" href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a>'}]);
+    return R;
+  }
+  function btn(label,fn,cls){const b=document.createElement('button');b.className='cellbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
+  function render(b){LAST=b;S.render(rows(b));const nx=b.feeds.map(f=>f.div&&f.div.next).filter(Boolean).sort((a,c)=>a.exTs-c.exTs)[0];document.getElementById('status').innerHTML='<b>'+b.feeds.length+'</b> names · session <b>'+b.session.toUpperCase()+'</b> · signer '+b.signer.slice(0,8)+'…'+(nx?' · next ex-date <b>'+fmtDate(nx.ex)+'</b>':'')+(b.perps?' · venue <b>live</b>':'')}
+  function connect(){try{const es=new EventSource('/api/stream');es.onmessage=(e)=>render(JSON.parse(e.data));es.onerror=()=>{es.close();setTimeout(connect,3000)}}catch(e){fetch('/api/board').then(r=>r.json()).then(render)}}
+  connect();
+})();
+</script>
+</body></html>

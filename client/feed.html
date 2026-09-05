@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIVI — feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head><body>
+<div class="titlebar"><div class="icon"></div><div class="doc"><div class="name"><b>DIVI</b> · <span id="ttl">feed</span><small>sources, dividend record, signature</small></div>
+<nav class="menus"><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a></nav></div>
+<div class="right"><button class="share" id="connect">Connect</button></div></div>
+<div class="fxbar"><div class="box">A1</div><div class="fx">fx</div><div class="formula">Click any cell.</div></div>
+<div class="sheetwrap"><div id="sheet"></div></div>
+<div class="tabs"><span class="plus">+</span><a href="/">Board</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><span class="status" id="status"></span></div>
+<script src="/sheet.js"></script><script src="/connect.js"></script>
+<script>
+(function(){
+  const SYM=(location.pathname.split('/').pop()||'AAPL').toUpperCase();document.title='DIVI — '+SYM;document.getElementById('ttl').textContent=SYM;
+  const S=new Sheet(document.getElementById('sheet'),{cols:8,widths:[190,170,110,90,100,120,120,120]});
+  const bps=(b)=>b==null?'—':(b>=0?'+':'')+Math.round(b)+'bp';
+  function btn(label,fn,cls){const b=document.createElement('button');b.className='cellbtn '+(cls||'');b.textContent=label;b.onclick=fn;return b}
+  async function load(){
+    const f=await fetch('/api/feed/'+SYM).then(r=>r.json());if(f.error){S.render([[{v:'Unknown feed',cls:'title',span:8}]]);return}
+    const d=f.div||{},nx=d.next;const R=[];
+    R.push([{v:SYM+' · '+f.name+' — mark '+fmt(f.mark)+' ± '+fmt(f.conf,2)+' ('+Math.round(f.confBps)+'bp) · '+f.session.toUpperCase(),cls:'title',span:8}]);
+    R.push([{v:(f.official?'Last official print '+fmt(f.official.price)+' ('+f.official.ageH.toFixed(1)+'h ago). ':'')+'MARK is '+bps(f.basis.vsOfficial)+' from the tape. '+f.poolCount+' Robinhood Chain pools, $'+Math.round(f.poolLiq/1e3).toLocaleString()+'k liquidity, β '+f.beta.toFixed(2)+'.',cls:'sub',span:8}]);
+    R.push('spacer');
+    R.push([{v:'Dividend',cls:'hd',span:8}]);
+    R.push([{v:'Annual / share',cls:'h'},{v:d.annual!=null?'$'+fmt(d.annual):'—',cls:'r'},{v:'Yield',cls:'h'},{v:d.yieldPct!=null?fmt(d.yieldPct)+'%':'—',cls:'r green',f:'=annual/mark'},{v:'Next ex-date',cls:'h'},{v:nx?fmtDate(nx.ex):'—',cls:'b'},{v:'Status',cls:'h'},{v:nx?(nx.confirmed?'<span class="chip g">declared</span>':'<span class="chip a">projected</span>'):'—'}]);
+    R.push([{v:'Next amount',cls:'h'},{v:nx?'$'+fmt(nx.amount,4):'—',cls:'r'},{v:'Pay date',cls:'h'},{v:nx&&nx.pay?fmtDate(nx.pay):'—'},{v:'Ex takes effect',cls:'h'},{v:nx?new Date(nx.exTs*1000).toUTCString().replace(' GMT',' UTC'):'—',span:3,cls:'mono'}]);
+    R.push([{v:'History',cls:'h'},{v:(d.history||[]).slice(0,6).map(h=>fmtDate(h.ex)+' $'+fmt(h.amount,4)).join('  ·  '),cls:'mono',span:7}]);
+    R.push('spacer');
+    R.push([{v:'Sources in this mark',cls:'hd',span:8}]);
+    R.push([{v:'Source',cls:'hd'},{v:'Venue',cls:'hd'},{v:'Price',cls:'hd r'},{v:'Weight',cls:'hd r'},{v:'vs mark',cls:'hd r'},{v:'',cls:'hd',span:3}]);
+    for(const s of f.sources)R.push([{v:s.label},{v:s.venue,cls:'muted'},{v:fmt(s.price),cls:'r'},{v:(s.w*100).toFixed(1)+'%',cls:'r'},{v:bps(s.devBps),cls:'r '+(s.devBps>0?'up':s.devBps<0?'dn':'')},{v:s.pair?'<a class="link" href="https://dexscreener.com/robinhood/'+s.pair+'" target="_blank" rel="noopener">pool ↗</a>':'',span:3}]);
+    for(const s of f.rejected)R.push([{v:s.label,cls:'red'},{v:s.venue,cls:'muted'},{v:fmt(s.price),cls:'r red'},{v:'rejected',cls:'r red'},{v:bps(s.devBps),cls:'r red'},{v:'',span:3}]);
+    R.push([{v:'MARK · weighted median',cls:'b'},{v:''},{v:fmt(f.mark),cls:'r b'},{v:'±'+Math.round(f.confBps)+'bp',cls:'r'},{v:sessChip(f.session)},{v:'',span:3}]);
+    R.push('spacer');
+    R.push([{v:'Signed payload',cls:'hd',span:8}]);
+    R.push([{v:f.signed.payload,cls:'mono',span:6,f:'=SIGN_ED25519("'+f.signed.payload+'")'},{el:btn('Verify',async()=>{const r=await fetch('/api/verify?payload='+encodeURIComponent(f.signed.payload)+'&sig='+f.signed.sig).then(r=>r.json());toast(r.valid?'valid — ed25519 signature checks out':'INVALID',!r.valid)},'primary'),span:2}]);
+    R.push([{v:'sig '+f.signed.sig.slice(0,40)+'… · pub '+f.signed.pub.slice(0,20)+'…',cls:'mono muted',span:8}]);
+    R.push([{v:'Underlyings',cls:'h'},{v:'RH token <a class="link" href="https://dexscreener.com/robinhood/'+f.rh+'" target="_blank" rel="noopener">'+f.rh+'</a>',cls:'mono',span:4},{v:f.xstock?'xStock <a class="link" href="https://jup.ag/tokens/'+f.xstock.mint+'" target="_blank" rel="noopener">'+f.xstock.mint.slice(0,10)+'…</a>':'no xStock listed',cls:'mono',span:3}]);
+    S.render(R);document.getElementById('status').innerHTML='<b>'+SYM+'</b> · '+f.sources.length+' sources · seq '+f.seq;
+  }
+  load();setInterval(load,8000);
+})();
+</script>
+</body></html>

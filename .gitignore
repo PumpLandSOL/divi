@@ -1,0 +1,15 @@
+node_modules/
+data.json
+.DS_Store
+_studio/*-profile/
+_studio/*-frames/
+_studio/out/
+out/
+cache/
+_studio/rec-profile-*/
+_studio/rec-frames-*/
+_studio/rec-profile-*/
+_studio/rec-frames-*/
+_studio/out/
+out/
+cache/
