@@ -97,6 +97,16 @@ section{padding:14vh 6vw}
 .col h4{font:400 30px/1.1 var(--serif);margin:14px 0 10px}
 .col p{font:400 15.5px/1.55 var(--ui);color:var(--ink2)}
 @media(max-width:860px){.cols{grid-template-columns:1fr}}
+/* faq */
+.faq{max-width:900px}
+.faq details{border-top:1px solid var(--line2);padding:6px 0}
+.faq details:last-child{border-bottom:1px solid var(--line2)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;font:400 clamp(22px,2.4vw,30px)/1.2 var(--serif);padding:18px 0}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:400 34px/1 var(--serif);color:var(--goldDeep);transition:transform .25s;flex:none}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq .a{font:400 16.5px/1.6 var(--ui);color:var(--ink2);padding:0 0 22px;max-width:62ch}
+.faq .a b{color:var(--ink);font-weight:600}
 /* footer */
 footer{padding:60px 6vw 80px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font:400 14px var(--ui);color:var(--ink3);position:relative;z-index:1;background:var(--paper)}
 footer .wm{font:400 34px/1 var(--serif);color:var(--ink)}
@@ -106,7 +116,7 @@ footer .links a{margin-left:18px;color:var(--ink2)}
 </style>
 </head><body class="landing">
 <div id="stage"></div>
-<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/" class="on">Home</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/contracts/DiviPerps.sol">Contract</a><a href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a></div><button class="connect" id="connect">Connect</button></nav>
+<nav class="topnav"><a class="brand" href="/">DIVI</a><div class="links"><a href="/" class="on">Home</a><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="#faq">FAQ</a><a href="/contracts/DiviPerps.sol">Contract</a><a href="https://x.com/DiviOnRH" target="_blank" rel="noopener">X</a></div><button class="connect" id="connect">Connect</button></nav>
 
 <header class="hero">
   <div class="eyebrow"><i></i>Robinhood Chain · USDG · 24/7</div>
@@ -155,6 +165,21 @@ footer .links a{margin-left:18px;color:var(--ink2)}
       <div class="col"><div class="n">03</div><h4>Anyone can settle</h4><p>Settlement is a permissionless call against the signed record. Shorts pay, longs receive, the settler keeps 1% of what was collected. A short that cannot cover is closed out to the pool.</p></div>
     </div>
     <div class="cabar" id="cabar" hidden><b>$DIVI · Robinhood Chain</b><span id="ca"></span><button class="btn small" id="copy">Copy</button></div>
+  </section>
+  <section id="faq">
+    <div class="sect-head"><h2>Questions, <em>answered.</em></h2><p>The mechanism in plain words. The full specification is in the <a href="/docs" style="text-decoration:underline">docs</a>.</p></div>
+    <div class="faq">
+      <details open><summary>What does “perps that pay dividends” mean?</summary><div class="a">On every ex-dividend date the contract moves the dividend from every short position to every long position, pro rata by shares. If you are long 15.58 shares’ worth of AAPL when it goes ex at $0.27, <b>$4.21 lands in your free balance.</b> If you are short, it leaves your margin.</div></details>
+      <details><summary>Where does the money come from?</summary><div class="a">From shorts. That is how stock lending has always worked: the short seller owes the dividend to whoever lent the shares. <b>Nothing is minted and nothing is subsidised.</b> The liquidity pool is the counterparty and only carries its net exposure, which the ex-date price gap offsets.</div></details>
+      <details><summary>Why is this fairer than a normal perp?</summary><div class="a">On the ex-date the stock gaps down by the dividend. On a normal perp the long eats that gap and receives nothing, while the short pockets it for free. On DIVI the long loses the gap and receives the cash, <b>net a shareholder</b>; the short gains the gap and pays the cash, net a real short.</div></details>
+      <details><summary>How do you price a stock at 3am on a Sunday?</summary><div class="a">Every mark is a weighted median of the official tape, every Robinhood Chain pool weighted by liquidity, the xStock on Solana, and index futures times the stock’s beta, with a confidence band. <b>Fills happen at mark ± half the band</b>, so a quiet weekend is a wider spread, which is the honest cost of a closed market.</div></details>
+      <details><summary>What is the difference between declared and projected?</summary><div class="a"><b>Declared</b> means the exchange has published the ex-date and the cash amount; the oracle signs that record and the contract settles it. <b>Projected</b> is an estimate from the payout cadence so you can plan ahead. Projected records are never signed and never move money.</div></details>
+      <details><summary>Who settles the dividend, and when?</summary><div class="a">Anyone. From the ex-date, any wallet can call settlement against the signed record. Shorts pay, longs receive, and <b>the settler keeps 1%</b> of what was collected. A short that cannot cover the dividend is closed out to the pool.</div></details>
+      <details><summary>What leverage, fees and liquidation rules apply?</summary><div class="a">Up to 10×, collateral in USDG, 8 bp per side to the pool, 5% maintenance margin. Anyone can liquidate a position under maintenance for 20% of the remaining margin. <b>Every open, close, liquidation and settlement carries a fresh oracle signature</b> that the contract verifies on-chain.</div></details>
+      <details><summary>Which stocks are on the board?</summary><div class="a">Eleven dividend payers with real Robinhood Chain pools: AAPL, MSFT, NVDA, META, GOOGL, SPY, QQQ, JNJ, IBM, COST and MCD. Each one is a real tokenized stock; the pools are the ones the mark reads.</div></details>
+      <details><summary>What is the practice desk?</summary><div class="a">The same venue with a practice balance of 10,000 USDG: same fills, same maintenance, <b>same dividend settlement on declared ex-dates</b>. Use it to feel the mechanism before you fund the on-chain desk.</div></details>
+      <details><summary>What does $DIVI do?</summary><div class="a">$DIVI is the utility token of the venue on Robinhood Chain. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate in that flow and is not a claim on the pool.</div></details>
+    </div>
   </section>
 </main>
 <footer><div><div class="wm">DIVI</div><div style="margin-top:8px">Perps that pay dividends · Robinhood Chain</div></div><div class="links"><a href="/trade">Trade</a><a href="/calendar">Calendar</a><a href="/desk">Practice</a><a href="/docs">Docs</a><a href="/api/board">API</a><a href="/contracts/DiviPerps.sol">Contract</a></div></footer>
@@ -211,7 +236,7 @@ requestAnimationFrame(tick);
   }
   function payday(b){const nx=b.feeds.filter(f=>f.div&&f.div.next).map(f=>({sym:f.sym,n:f.div.next,mark:f.mark})).sort((a,c)=>a.n.exTs-c.n.exTs)[0];if(!nx)return;document.getElementById('payV').innerHTML=nx.sym+' · <em>'+fmtDate(nx.n.ex)+'</em>';document.getElementById('payS').textContent='$'+fmt(nx.n.amount,3)+' per share · '+(nx.n.confirmed?'declared':'projected')+' · a $1,000 long earns $'+fmt(1000/nx.mark*nx.n.amount)}
   const cSym=document.getElementById('cSym'),cMar=document.getElementById('cMar'),cLev=document.getElementById('cLev');
-  function calc(){if(!B)return;const f=B.feeds.find(x=>x.sym===cSym.value)||B.feeds[0];const nx=f.div&&f.div.next;const size=+cMar.value*+cLev.value;const earn=nx?size/f.mark*nx.amount:0;document.getElementById('cSymV').textContent=f.sym;document.getElementById('cMarV').textContent='$'+fmt(cMar.value,0);document.getElementById('cLevV').textContent=cLev.value+'×';document.getElementById('calcOut').textContent='$'+fmt(earn);document.getElementById('calcSub').textContent=nx?fmt(size/f.mark,2)+' shares × $'+fmt(nx.amount,3)+' on '+fmtDate(nx.ex)+' ('+(nx.confirmed?'declared':'projected')+'). Annualised at '+f.div.perYear+' payouts: $'+fmt(earn*f.div.perYear)+' on $'+fmt(cMar.value,0)+' margin, '+fmt(earn*f.div.perYear/+cMar.value*100,1)+'%.':'No dividend record yet.'}
+  function calc(){if(!B)return;const f=B.feeds.find(x=>x.sym===cSym.value)||B.feeds[0];const nx=f.div&&f.div.next;const size=+cMar.value*+cLev.value;const earn=nx?size/f.mark*nx.amount:0;document.getElementById('cSymV').textContent=f.sym;document.getElementById('cMarV').textContent='$'+fmt(cMar.value,0);document.getElementById('cLevV').textContent=cLev.value+'×';document.getElementById('calcOut').textContent='$'+fmt(earn);document.getElementById('calcSub').textContent=nx?fmt(size/f.mark,2)+' shares × $'+fmt(nx.amount,3)+' on '+fmtDate(nx.ex)+' ('+(nx.confirmed?'declared':'projected')+'). Annualised at '+f.div.perYear+' payouts: $'+fmt(earn*f.div.perYear)+' on $'+fmt(cMar.value,0)+' margin, '+fmt(earn*f.div.perYear/+cMar.value*100,1)+'%.':'The record publishes when the exchange declares it.'}
   [cSym,cMar,cLev].forEach(el=>el.addEventListener('input',calc));
   function render(b){const first=!B;B=b;if(first){cSym.innerHTML=b.feeds.map(f=>'<option value="'+f.sym+'">'+f.sym+' · '+f.name+'</option>').join('');cards(b);payday(b)}else{cards(b)}calc();if(b.live&&b.mint){document.getElementById('cabar').hidden=false;document.getElementById('ca').textContent=b.mint}}
   document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('ca').textContent);

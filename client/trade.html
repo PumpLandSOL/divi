@@ -45,7 +45,7 @@
     R.push([{v:'Dividend settlement',cls:'hd',span:10}]);
     R.push([{v:'Anyone can settle a declared dividend once its ex-date has passed. Shorts pay, longs receive, the settler keeps 1% of what was collected.',cls:'sub',span:10}]);
     const dl=Object.entries(DIVS).filter(([,d])=>d.next&&d.next.confirmed);
-    if(!dl.length)R.push([{v:'no declared records right now',cls:'muted',span:10}]);
+    if(!dl.length)R.push([{v:'The next declared record settles here.',cls:'muted',span:10}]);
     for(const [sym,d] of dl){const passed=Date.now()>=d.next.exTs*1000;R.push([{v:sym,cls:'b'},{v:fmtDate(d.next.ex)},{v:'$'+fmt(d.next.amount,4),cls:'r'},{v:passed?'<span class="chip g">settleable</span>':'<span class="chip b">waits for ex-date</span>',span:2},{el:btn('Settle on-chain',guarded(async()=>{need();const dv=await fetch('/api/dividend/'+sym+'/evm').then(r=>r.json());if(dv.error)throw new Error(dv.error);const n=await fetch('/api/perps/state').then(r=>r.json());await tx(ST.perps,sel('settleDividend('+DV_T+',uint256,uint256)')+dvWords(dv)+word(0)+word(1000))}),passed?'primary':''),span:2},{v:me?'received $'+fmt(me.dividendsReceived)+' · paid $'+fmt(me.dividendsPaid):'',cls:'muted',span:3}])}
     R.push('spacer');
     R.push([{v:'Liquidations',cls:'hd',span:2},{v:(s.liquidatable&&s.liquidatable.length)?'':'No position is under maintenance right now.',cls:'muted',span:8}]);
