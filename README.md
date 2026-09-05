@@ -1,5 +1,7 @@
 # DIVI ($DIVI) — perps that pay dividends
 
+https://divionrh.xyz
+
 Perpetuals on tokenized stocks on Robinhood Chain with one difference from every other perp: **the dividend actually moves.** On the ex-dividend date the contract takes shares × dividend from every short and pays it to every long, pro rata by shares, exactly like a stock loan. Longs are made whole for the ex-date gap; shorts owe what a real short owes. Nothing is minted, nothing is subsidised.
 
 Prices are a 24/7 fair value (tape + every Robinhood Chain pool + xStocks + index futures × β, weighted median with a confidence band), so it works all weekend.
