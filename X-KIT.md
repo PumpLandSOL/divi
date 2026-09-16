@@ -117,7 +117,7 @@ DIVI, shipped:
 
 ✓ dividends settle on-chain
 ✓ 22 real stocks, real RH pools
-✓ 24/7 signed marks, 10x
+✓ 24/7 signed marks, up to 10x
 ✓ DRIP: paydays compound
 ✓ payday ladder + calendar
 
