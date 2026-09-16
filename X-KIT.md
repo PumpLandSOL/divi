@@ -111,7 +111,7 @@ divionrh.xyz/desk
 Also new: the payday ladder. Every name by next ex-date, yield at your leverage, what a $1,000 long collects, and the 1-year DRIP path. divionrh.xyz/api/payday?lev=5
 ```
 
-## Checklist + comparison · attach divi-checklist.png · divi-season.png (season explainer)
+## Checklist + comparison · attach divi-checklist.png · divi-season.png (season explainer) · divi-tiers.png · divi-drip.png
 ```
 DIVI, shipped:
 
@@ -160,4 +160,33 @@ Hold $DIVI: 1M/5M/10M = 1.1/1.25/1.5×
 
 divionrh.xyz
 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
+```
+
+## Holder tiers · attach divi-tiers.png
+```
+Same payday. Four wallets.
+
+$22.71 dividend on a long $AAPL:
+no $DIVI → 2,271 pts
+1M $DIVI → 2,498
+5M → 2,839
+10M → 3,407
+
+Same dividend, +50%. Read on-chain, nothing to stake. Stacks with DRIP and streaks.
+
+divionrh.xyz
+0xec297bed829f1a8b2c2709ae39ff08baddec04ed
+```
+
+## DRIP curve · attach divi-drip.png
+```
+Same stock, same size, 12 paydays.
+
+$1,000 long $CVX at 5×, price flat:
+Cash: $499
+DRIP on: $631, and 23.6 shares became 38.5
+
+Every dividend the shorts pay buys more of the long. Paydays that buy paydays. On DIVI, DRIP also counts 2× for the Season.
+
+divionrh.xyz/desk
 ```
