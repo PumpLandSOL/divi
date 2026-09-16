@@ -52,6 +52,12 @@
   R.push(M('GET /api/dividends · /api/dividend/:SYM','Calendar and per-name records. /api/dividend/:SYM/evm returns the signed Div struct for a declared record.'));
   R.push(M('GET /api/perps/state?w=','Venue state and your positions. GET /api/config for addresses and parameters.'));
   R.push('spacer');
+  R.push(H('5b · The Payday Update · board + DRIP'));
+  R.push(P('Twenty-two names','AAPL MSFT NVDA META GOOGL SPY QQQ JNJ IBM COST MCD KO XOM PG ABBV CVX HD WMT JPM UNH LLY MRK. Every one is a real tokenized stock with a real Robinhood Chain pool; the mark reads those pools, the xStock and the futures basis. Same dividend oracle and settlement for all of them.'));
+  R.push(P('DRIP','Dividend reinvestment on a perp. Turn it on for any long. On each ex-date the dividend received from the shorts is added to the position: margin += cash, size += cash × leverage, shares += size added ÷ current mark. The next payday is on the bigger share count. Off at any time; dividends then land as cash. Shorts cannot DRIP: they pay.'));
+  R.push(P('Payday ladder','Every name ordered by its next ex-date with yield, yield × leverage, what a $1,000 long collects on that date, and a one-year compounding path with DRIP at flat price: (1 + yield × lev ÷ payouts per year) ^ payouts − 1.'));
+  R.push(M('GET /api/payday?lev=','{ lev, names, ladder: [{ sym, mark, annual, perYear, yieldPct, levYieldPct, dripYearPct, next, daysToEx, per1k }] }'));
+  R.push(M('POST /api/desk/drip','{ w, id, on } · toggles DRIP on a long practice position'));
   R.push(H('6 · $DIVI'));
   R.push(P('Utility','Utility token on Robinhood Chain. It is not a claim on the venue, the pool, or any dividend flow. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate.'));
   R.push('spacer');

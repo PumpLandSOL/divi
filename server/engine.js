@@ -27,6 +27,18 @@ const BOARD = [
   { sym: 'IBM',   name: 'IBM',                rh: '0x980dcf6766FA79f5Cf0c4AAdb3ab477ff15a9619', fut: 'ES=F' },
   { sym: 'COST',  name: 'Costco',             rh: '0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2', fut: 'ES=F' },
   { sym: 'MCD',   name: "McDonald's",         rh: '0x08E91b659a545Bfb52F1a5e588Bf6Dc2FA85DE7A', fut: 'ES=F' },
+  // ── Payday Update: 11 more dividend payers, every one with a real Robinhood Chain pool ──
+  { sym: 'KO',    name: 'Coca-Cola',          rh: '0xf6100b855D8C44d3662aa40DeA90436E6197158c', fut: 'ES=F' },
+  { sym: 'XOM',   name: 'Exxon Mobil',        rh: '0x56664778A3d488270cb2f61C67c308350a547AF7', fut: 'ES=F' },
+  { sym: 'PG',    name: 'Procter & Gamble',   rh: '0x0F901745D470Fe995603691419B70D8dc190Db2b', fut: 'ES=F' },
+  { sym: 'ABBV',  name: 'AbbVie',             rh: '0xA0675aDf2c985D3bB2f4b2c99879122BA67E0B7B', fut: 'ES=F' },
+  { sym: 'CVX',   name: 'Chevron',            rh: '0xe0Bd4dB9057105b4F286C8Ce9D3457639c1E60B6', fut: 'ES=F' },
+  { sym: 'HD',    name: 'Home Depot',         rh: '0x4e5d97B1bC7B468a85A6ea636EB356410FEd940C', fut: 'ES=F' },
+  { sym: 'WMT',   name: 'Walmart',            rh: '0x16Ac89aFC679274896C0eEd8eA66C18e949ECD4c', fut: 'ES=F' },
+  { sym: 'JPM',   name: 'JPMorgan Chase',     rh: '0x9459a75B67Da40890EC396b27bfCE6a1F73dc1cB', fut: 'ES=F' },
+  { sym: 'UNH',   name: 'UnitedHealth',       rh: '0xb6e8218ABe37F3f39d8b19A7c1529a0a6C813FC7', fut: 'ES=F' },
+  { sym: 'LLY',   name: 'Eli Lilly',          rh: '0xc7db6eA9C2B7c8f518D4C958BbBB6A357cF63DB1', fut: 'ES=F' },
+  { sym: 'MRK',   name: 'Merck',              rh: '0x90a18453FCD0C0f15CF739c0FE22De840fF7F860', fut: 'ES=F' },
 ];
 
 // ── NYSE calendar ─────────────────────────────────────────────────────────────

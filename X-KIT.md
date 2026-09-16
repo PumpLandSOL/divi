@@ -89,3 +89,24 @@ Ex-dates on the calendar. Only exchange-declared dividends settle.
 $DIVI · CA 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
 divionrh.xyz/calendar
 ```
+
+## THE PAYDAY UPDATE · attach divi-payday-10s.mp4
+\
+**Reply**
+\
+## THE PAYDAY UPDATE · attach divi-payday-10s.mp4
+```
+THE PAYDAY UPDATE is live on DIVI.
+
+22 names, double the board: $KO $XOM $PG $ABBV $CVX $HD $WMT $JPM $UNH $LLY $MRK join. Real Robinhood Chain pools.
+
+DRIP: turn it on a long and every dividend the shorts pay you buys more of the position. Paydays compound.
+
+divionrh.xyz/desk
+0xec297bed829f1a8b2c2709ae39ff08baddec04ed
+```
+
+**Reply**
+```
+Also new: the payday ladder. Every name by next ex-date, yield at your leverage, what a $1,000 long collects, and the 1-year DRIP path. divionrh.xyz/api/payday?lev=5
+```

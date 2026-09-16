@@ -142,7 +142,7 @@ footer .links a{margin-left:18px;color:var(--ink2)}
   </div></section>
 
   <section>
-    <div class="sect-head"><h2>Eleven names. <em>Every payday.</em></h2><p>Real tokenized stocks with real Robinhood Chain pools. Live 24/7 marks, the declared or projected ex-date, and what a $1,000 long earns on it.</p></div>
+    <div class="sect-head"><h2>Twenty-two names. <em>Every payday.</em></h2><p>Real tokenized stocks with real Robinhood Chain pools, from Apple to Exxon to JPMorgan. Live 24/7 marks, the declared or projected ex-date, and what a $1,000 long earns on it.</p></div>
     <div class="rail" id="rail"></div>
   </section>
 
@@ -176,7 +176,9 @@ footer .links a{margin-left:18px;color:var(--ink2)}
       <details><summary>What is the difference between declared and projected?</summary><div class="a"><b>Declared</b> means the exchange has published the ex-date and the cash amount; the oracle signs that record and the contract settles it. <b>Projected</b> is an estimate from the payout cadence so you can plan ahead. Projected records are never signed and never move money.</div></details>
       <details><summary>Who settles the dividend, and when?</summary><div class="a">Anyone. From the ex-date, any wallet can call settlement against the signed record. Shorts pay, longs receive, and <b>the settler keeps 1%</b> of what was collected. A short that cannot cover the dividend is closed out to the pool.</div></details>
       <details><summary>What leverage, fees and liquidation rules apply?</summary><div class="a">Up to 10×, collateral in USDG, 8 bp per side to the pool, 5% maintenance margin. Anyone can liquidate a position under maintenance for 20% of the remaining margin. <b>Every open, close, liquidation and settlement carries a fresh oracle signature</b> that the contract verifies on-chain.</div></details>
-      <details><summary>Which stocks are on the board?</summary><div class="a">Eleven dividend payers with real Robinhood Chain pools: AAPL, MSFT, NVDA, META, GOOGL, SPY, QQQ, JNJ, IBM, COST and MCD. Each one is a real tokenized stock; the pools are the ones the mark reads.</div></details>
+      <details><summary>Which stocks are on the board?</summary><div class="a">Twenty-two dividend payers with real Robinhood Chain pools: AAPL, MSFT, NVDA, META, GOOGL, SPY, QQQ, JNJ, IBM, COST, MCD, KO, XOM, PG, ABBV, CVX, HD, WMT, JPM, UNH, LLY and MRK. Each one is a real tokenized stock; the pools are the ones the mark reads.</div></details>
+      <details><summary>What is DRIP?</summary><div class="a">Dividend reinvestment, the way a brokerage does it, on a perp. Turn DRIP on for any long and on each ex-date the dividend you receive from the shorts buys more of the same position at the current mark, at the same leverage, instead of landing as cash. Shares grow every payday, so the next payday is bigger. Turn it off any time and the dividends land as cash again.</div></details>
+      <details><summary>What is the payday ladder?</summary><div class="a">Every name on the board ordered by its next ex-date, with the yield, the yield at your leverage, what a $1,000 long collects on that date, and the one-year compounding path with DRIP. It is at <code>/api/payday?lev=</code> and on the calendar.</div></details>
       <details><summary>What is the practice desk?</summary><div class="a">The same venue with a practice balance of 10,000 USDG: same fills, same maintenance, <b>same dividend settlement on declared ex-dates</b>. Use it to feel the mechanism before you fund the on-chain desk.</div></details>
       <details><summary>What does $DIVI do?</summary><div class="a">$DIVI is the utility token of the venue on Robinhood Chain. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate in that flow and is not a claim on the pool.</div></details>
     </div>

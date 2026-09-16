@@ -60,9 +60,14 @@ function markDesk() {
       if (d && d.next && d.next.confirmed && t >= d.next.exTs * 1000 && p.openedAt < d.next.exTs * 1000 && (p.lastDiv || 0) < d.next.exTs) {
         p.lastDiv = d.next.exTs;
         const cash = p.qty * d.next.amount;
-        if (p.side === 'long') { a.cash += cash; a.divReceived += cash; p.divReceived = (p.divReceived || 0) + cash; }
+        if (p.side === 'long') {
+          a.divReceived += cash; p.divReceived = (p.divReceived || 0) + cash;
+          if (p.drip) { // DRIP: the dividend buys more of the same position at the current mark, same leverage
+            const add = cash * p.lev; p.margin += cash; p.notional += add; p.qty += add / m.mark; p.dripped = (p.dripped || 0) + cash; p.drips = (p.drips || 0) + 1; a.dripped = (a.dripped || 0) + cash;
+          } else a.cash += cash;
+        }
         else { const c = Math.min(cash, p.margin); p.margin -= c; a.divPaid += c; p.divPaid = (p.divPaid || 0) + c; }
-        (a.events = a.events || []).unshift({ t, sym: p.sym, side: p.side, cash, exTs: d.next.exTs }); a.events = a.events.slice(0, 30);
+        (a.events = a.events || []).unshift({ t, sym: p.sym, side: p.side, cash, exTs: d.next.exTs, drip: !!(p.side === 'long' && p.drip) }); a.events = a.events.slice(0, 30);
         dirty = true;
       }
       const eq = p.margin + pnlOf(p, m);
@@ -78,7 +83,7 @@ function deskView(w) {
   const a = acct(w); if (!a) return null;
   const positions = a.positions.map((p) => { const m = E.feed(p.sym); const pnl = m ? pnlOf(p, m) : 0; const d = E.dividend(p.sym); return Object.assign({}, p, { mark: m ? m.mark : null, pnl, equity: p.margin + pnl, liqPx: p.side === 'long' ? p.entry * (1 - (1 / p.lev) + DESK_MAINT) : p.entry * (1 + (1 / p.lev) - DESK_MAINT), nextDiv: d && d.next ? { ex: d.next.ex, exTs: d.next.exTs, cash: p.qty * d.next.amount * (p.side === 'long' ? 1 : -1), confirmed: d.next.confirmed } : null }); });
   const equity = a.cash + positions.reduce((s, p) => s + p.equity, 0);
-  return { cash: a.cash, equity, positions, closed: a.closed.slice(0, 20), events: (a.events || []).slice(0, 12), divReceived: a.divReceived || 0, divPaid: a.divPaid || 0, start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS };
+  return { cash: a.cash, equity, positions, closed: a.closed.slice(0, 20), events: (a.events || []).slice(0, 12), divReceived: a.divReceived || 0, divPaid: a.divPaid || 0, dripped: a.dripped || 0, start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS };
 }
 function deskOpen(w, sym, side, lev, margin) {
   const a = acct(w); if (!a) return { error: 'connect a wallet first' };
@@ -102,6 +107,20 @@ function deskClose(w, id) {
   a.positions.splice(i, 1); a.cash += Math.max(0, p.margin + pnl);
   a.closed.unshift(Object.assign({}, p, { exit, pnl, closedAt: Date.now(), reason: 'closed' })); a.closed = a.closed.slice(0, 50); dirty = true;
   return { ok: true, pnl, exit };
+}
+function deskDrip(w, id, on) {
+  const a = acct(w); if (!a) return { error: 'no account' };
+  const p = a.positions.find((x) => x.id === id); if (!p) return { error: 'no such position' };
+  if (p.side !== 'long') return { error: 'DRIP is for longs: shorts pay the dividend' };
+  p.drip = !!on; dirty = true; return { ok: true, drip: p.drip };
+}
+// payday ladder: every name by next ex-date, with what a $1,000 long at lev earns, and the compounding path with DRIP over a year
+function payday(lev) {
+  lev = Math.max(1, Math.min(DESK_MAX_LEV, +lev || 1));
+  return E.snapshot().map((m) => { const d = E.dividend(m.sym); if (!d) return null; const yieldPct = m.mark ? d.annual / m.mark * 100 : 0; const per1k = d.next ? 1000 * lev / m.mark * d.next.amount : 0;
+    const drip = Math.pow(1 + yieldPct / 100 * lev / (d.perYear || 4), d.perYear || 4) - 1; // one year of reinvested paydays, price flat
+    return { sym: m.sym, name: m.name, mark: m.mark, annual: d.annual, perYear: d.perYear, yieldPct, levYieldPct: yieldPct * lev, dripYearPct: drip * 100, next: d.next, daysToEx: d.next ? (d.next.exTs * 1000 - Date.now()) / 86400e3 : null, per1k }; })
+    .filter(Boolean).sort((x, y) => (x.daysToEx == null ? 1e9 : x.daysToEx) - (y.daysToEx == null ? 1e9 : y.daysToEx));
 }
 function deskReset(w) { const a = acct(w); if (!a) return { error: 'no account' }; DB.desk[w] = { cash: DESK_START, positions: [], closed: [], divReceived: 0, divPaid: 0, openedAt: Date.now() }; dirty = true; return { ok: true }; }
 function leaderboard() {
@@ -160,6 +179,8 @@ const server = http.createServer(async (req, res) => {
   if (u === '/api/desk' && req.method === 'GET') { const v = deskView(url.searchParams.get('w')); return v ? json(res, 200, v) : json(res, 400, { error: 'bad wallet' }); }
   if (u === '/api/desk/open' && req.method === 'POST') { const b = await body(req); const r = deskOpen(b.w, String(b.sym || '').toUpperCase(), b.side, b.lev, b.margin); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }
   if (u === '/api/desk/close' && req.method === 'POST') { const b = await body(req); const r = deskClose(b.w, b.id); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }
+  if (u === '/api/desk/drip' && req.method === 'POST') { const b = await body(req); const r = deskDrip(b.w, b.id, b.on); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }
+  if (u === '/api/payday') return json(res, 200, { lev: +url.searchParams.get('lev') || 1, names: E.BOARD.length, ladder: payday(url.searchParams.get('lev')) });
   if (u === '/api/desk/reset' && req.method === 'POST') { const b = await body(req); const r = deskReset(b.w); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }
 
   if (u === '/' || u === '/index.html') return file(res, path.join(CLIENT, 'index.html'));
