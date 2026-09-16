@@ -100,7 +100,7 @@ THE PAYDAY UPDATE is live.
 
 22 names, double the board: $KO $XOM $PG $ABBV $CVX $HD $WMT $JPM $UNH $LLY $MRK join. Real RH Chain pools.
 
-DRIP: flip it on a long and every dividend the shorts pay you buys more of it. Paydays compound.
+DRIP: flip it on a long and every dividend buys more of it. Paydays compound.
 
 divionrh.xyz/desk
 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
