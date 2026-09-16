@@ -39,7 +39,7 @@ divi-pfp.png 400² (dark) · divi-pfp-paper.png · divi-wordmark.png 1200×400 �
 ```
 Every perp on earth forgets the dividend.
 
-Stock goes ex, price gaps down. The long eats it. The short pockets it.
+Stock goes ex, price gaps down. Long eats it, short pockets it.
 
 DIVI: on the ex-date the dividend moves from every short to every long, pro rata. Like stock lending, on-chain, 24/7.
 
