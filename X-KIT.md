@@ -32,3 +32,60 @@ divionrh.xyz · $DIVI
 
 ## Assets (brand/)
 divi-pfp.png 400² (dark) · divi-pfp-paper.png · divi-wordmark.png 1200×400 · divi-banner.png 1500×500 · divi-og.png 1200×630 · divi-how.png · divi-vs.png · divi-board.png
+
+## Launch tweets (5)
+
+**1 · Launch (pin) · attach divi-hype-10s.mp4**
+```
+Every perp on earth forgets the dividend.
+
+Stock goes ex, price gaps down. The long eats it. The short pockets it.
+
+DIVI fixes it: on the ex-date the dividend moves from every short to every long, pro rata. Like stock lending, on-chain, 24/7.
+
+Perps that pay dividends. On Robinhood Chain.
+divionrh.xyz
+```
+
+**2 · How it works · attach divi-how.png**
+```
+The dividend moves.
+
+Short 5x $AAPL owes 15.67 shares x $0.27. Long 5x $AAPL receives it. Settled from margin to free balance on the ex-date, on-chain.
+
+No treasury. No emissions. Shorts pay, longs get paid.
+
+divionrh.xyz/trade
+```
+
+**3 · Vs every other perp · attach divi-vs.png**
+```
+Normal perp long on ex-date: price gaps down, you get nothing.
+Normal perp short on ex-date: free money.
+
+DIVI long on ex-date: gap down, dividend in. Net, a shareholder.
+DIVI short: you owe it. Like it always should have been.
+
+divionrh.xyz
+```
+
+**4 · The demo · attach divi-demo-15s.mp4**
+```
+15 seconds: open a long, watch the ex-date hit, watch the dividend land in your balance while the shorts pay it.
+
+Marks are a weighted median of the tape, every Robinhood Chain pool, the xStock and futures. Fills at mark, never asleep.
+
+divionrh.xyz/trade
+```
+
+**5 · The board · attach divi-board.png**
+```
+11 names day one, all real tokenized stocks with real Robinhood Chain pools:
+
+$AAPL $MSFT $NVDA $META $GOOGL $SPY $QQQ $JNJ $IBM $COST $MCD
+
+Ex-dates on the calendar. Only exchange-declared dividends settle. Anyone can settle a record and keep 1%.
+
+$DIVI · CA soon 🔔
+divionrh.xyz/calendar
+```
