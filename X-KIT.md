@@ -43,7 +43,7 @@ Stock goes ex, price gaps down. Long eats it, short pockets it.
 
 DIVI: on the ex-date the dividend moves from every short to every long, pro rata. Like stock lending, on-chain, 24/7.
 
-Perps that pay dividends. Robinhood Chain.
+Perps that pay dividends.
 divionrh.xyz
 ```
 
