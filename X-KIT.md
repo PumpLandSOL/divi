@@ -133,7 +133,7 @@ THE PAYDAY SEASON is live.
 
 Every dividend you receive mints points. DRIP counts double. Streaks up to +50%.
 
-Hold $DIVI for the boost: 1M / 5M / 10M → 1.1× / 1.25× / 1.5× + fee rebates.
+Hold $DIVI for the boost: 1M / 5M / 10M → 1.1× / 1.25× / 1.5×.
 
 20M $DIVI pool, split by points. Ends Oct 31.
 
