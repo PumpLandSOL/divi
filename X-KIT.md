@@ -41,9 +41,9 @@ Every perp on earth forgets the dividend.
 
 Stock goes ex, price gaps down. The long eats it. The short pockets it.
 
-DIVI fixes it: on the ex-date the dividend moves from every short to every long, pro rata. Like stock lending, on-chain, 24/7.
+DIVI: on the ex-date the dividend moves from every short to every long, pro rata. Like stock lending, on-chain, 24/7.
 
-Perps that pay dividends. On Robinhood Chain.
+Perps that pay dividends. Robinhood Chain.
 divionrh.xyz
 ```
 
@@ -84,7 +84,7 @@ divionrh.xyz/trade
 
 $AAPL $MSFT $NVDA $META $GOOGL $SPY $QQQ $JNJ $IBM $COST $MCD
 
-Ex-dates on the calendar. Only exchange-declared dividends settle. Anyone can settle a record and keep 1%.
+Ex-dates on the calendar. Only exchange-declared dividends settle.
 
 $DIVI · CA soon 🔔
 divionrh.xyz/calendar
