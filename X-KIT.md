@@ -96,11 +96,11 @@ divionrh.xyz/calendar
 \
 ## THE PAYDAY UPDATE · attach divi-payday-10s.mp4
 ```
-THE PAYDAY UPDATE is live on DIVI.
+THE PAYDAY UPDATE is live.
 
-22 names, double the board: $KO $XOM $PG $ABBV $CVX $HD $WMT $JPM $UNH $LLY $MRK join. Real Robinhood Chain pools.
+22 names, double the board: $KO $XOM $PG $ABBV $CVX $HD $WMT $JPM $UNH $LLY $MRK join. Real RH Chain pools.
 
-DRIP: turn it on a long and every dividend the shorts pay you buys more of the position. Paydays compound.
+DRIP: flip it on a long and every dividend the shorts pay you buys more of it. Paydays compound.
 
 divionrh.xyz/desk
 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
