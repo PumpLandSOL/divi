@@ -110,3 +110,19 @@ divionrh.xyz/desk
 ```
 Also new: the payday ladder. Every name by next ex-date, yield at your leverage, what a $1,000 long collects, and the 1-year DRIP path. divionrh.xyz/api/payday?lev=5
 ```
+
+## Checklist + comparison · attach divi-checklist.png
+```
+DIVI, shipped:
+
+✓ dividends settle on-chain
+✓ 22 real stocks, real RH pools
+✓ 24/7 signed marks, 10x
+✓ DRIP: paydays compound
+✓ payday ladder + calendar
+
+$INDEX ATH $76M. We're day one.
+
+divionrh.xyz
+0xec297bed829f1a8b2c2709ae39ff08baddec04ed
+```
