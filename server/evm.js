@@ -92,4 +92,4 @@ async function openPositions() {
   for (let i = Math.max(0, n - 400); i < n; i++) { const h = await call(PERPS, 'positions(uint256)', [word(i)]); if (Number(u(h, 3)) !== 0) continue; out.push(parsePos(i, h)); }
   return out;
 }
-module.exports = { init, address, signPrice, signDividend, state, openPositions, sel, RPC, USDG, PERPS, SESS };
+module.exports = { init, address, signPrice, signDividend, state, openPositions, sel, call, RPC, USDG, PERPS, SESS };

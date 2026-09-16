@@ -63,6 +63,11 @@ section{padding:14vh 6vw}
 /* paycheck cards */
 .rail{display:flex;gap:18px;overflow-x:auto;padding:8px 6vw 30px;margin:0 -6vw;scroll-snap-type:x mandatory;scrollbar-width:none}
 .rail::-webkit-scrollbar{display:none}
+.season{display:grid;grid-template-columns:1fr 1fr 1.2fr 1.4fr;gap:18px}.sbox{background:var(--paper2);border:1px solid var(--line);border-radius:24px;padding:26px;min-height:200px}
+.sbox .lab{font:500 11px/1 var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}.sbox .big{font:400 54px/1 var(--serif);margin:12px 0 6px;letter-spacing:-.02em}.sbox .sub{font:400 14px/1.5 var(--ui);color:var(--ink2)}
+.tier{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font:400 14px var(--ui)}.tier b{font-weight:600}.tier .x{color:var(--goldDeep);font-family:var(--serif);font-size:20px}
+.lb{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font:400 13.5px var(--ui)}.lb .mono{font-family:ui-monospace,monospace;font-size:12.5px}.lb b{font-weight:600}
+@media(max-width:1000px){.season{grid-template-columns:1fr 1fr}}@media(max-width:600px){.season{grid-template-columns:1fr}}
 .card{flex:0 0 min(340px,82vw);scroll-snap-align:start;border-radius:26px;background:linear-gradient(160deg,#fffdf7,#f3eee2);border:1px solid var(--line);padding:26px 26px 22px;position:relative;transform-style:preserve-3d;transition:transform .15s ease-out,box-shadow .3s;box-shadow:0 20px 50px -30px rgba(40,30,0,.3);text-decoration:none;color:inherit;display:block}
 .card:hover{box-shadow:0 40px 70px -30px rgba(40,30,0,.35)}
 .card .top{display:flex;justify-content:space-between;align-items:baseline}
@@ -146,6 +151,16 @@ footer .links a{margin-left:18px;color:var(--ink2)}
     <div class="rail" id="rail"></div>
   </section>
 
+  <section id="season">
+    <div class="sect-head"><h2>The Payday Season. <em>Points every ex-date.</em></h2><p>Every dividend your desk receives mints points. DRIP paydays count double, a streak multiplier grows for every consecutive ex-date you hold through, and $DIVI holders get a tier boost and a fee rebate. The season pool goes to the board, pro rata.</p></div>
+    <div class="season">
+      <div class="sbox"><div class="lab">Season 1 ends in</div><div class="big" id="sCount">—</div><div class="sub" id="sMeta">—</div></div>
+      <div class="sbox"><div class="lab">Season pool</div><div class="big" id="sPool">—</div><div class="sub">$DIVI · split by points at season end</div></div>
+      <div class="sbox tiers"><div class="lab">Holder tiers · read on-chain</div><div id="sTiers"></div></div>
+      <div class="sbox board"><div class="lab">Leaderboard</div><div id="sBoard" class="sub">no points yet · first payday is next ex-date</div><a class="btn gold" href="/desk" style="margin-top:14px">Open the desk →</a></div>
+    </div>
+  </section>
+
   <section>
     <div class="calc">
       <div><h3>What would <em>your</em> long earn?</h3><div class="out" id="calcOut">$0.00</div><div class="sub" id="calcSub">Pick a name, a size and a leverage. The number is shares × the next declared dividend, paid on the ex-date to your free balance.</div></div>
@@ -179,6 +194,8 @@ footer .links a{margin-left:18px;color:var(--ink2)}
       <details><summary>Which stocks are on the board?</summary><div class="a">Twenty-two dividend payers with real Robinhood Chain pools: AAPL, MSFT, NVDA, META, GOOGL, SPY, QQQ, JNJ, IBM, COST, MCD, KO, XOM, PG, ABBV, CVX, HD, WMT, JPM, UNH, LLY and MRK. Each one is a real tokenized stock; the pools are the ones the mark reads.</div></details>
       <details><summary>What is DRIP?</summary><div class="a">Dividend reinvestment, the way a brokerage does it, on a perp. Turn DRIP on for any long and on each ex-date the dividend you receive from the shorts buys more of the same position at the current mark, at the same leverage, instead of landing as cash. Shares grow every payday, so the next payday is bigger. Turn it off any time and the dividends land as cash again.</div></details>
       <details><summary>What is the payday ladder?</summary><div class="a">Every name on the board ordered by its next ex-date, with the yield, the yield at your leverage, what a $1,000 long collects on that date, and the one-year compounding path with DRIP. It is at <code>/api/payday?lev=</code> and on the calendar.</div></details>
+      <details><summary>What is the Payday Season?</summary><div class="a">A scored season on the desk. Every dividend your desk receives mints 100 points per dollar. DRIP paydays count double. Holding a long through consecutive ex-dates builds a streak: +10% per payday, up to +50%. Shorts earn 25 points per dollar of dividend they pay, and every trade earns 1 point per $100 of size. At the end of the season the pool of $DIVI is split across the leaderboard pro rata by points. Season 1 runs to October 31, 2026.</div></details>
+      <details><summary>What are the holder tiers?</summary><div class="a">Your $DIVI balance is read from Robinhood Chain when you connect and refreshed every 90 seconds. Hold 1M for Holder (1.1× points, 25% fee rebate), 5M for Shareholder (1.25×, 50%), 10M for Board (1.5×, 75%). The boost applies to every point you earn and the rebate to every fee on the desk. Nothing to stake, nothing to lock: hold it in the wallet you trade with.</div></details>
       <details><summary>What is the practice desk?</summary><div class="a">The same venue with a practice balance of 10,000 USDG: same fills, same maintenance, <b>same dividend settlement on declared ex-dates</b>. Use it to feel the mechanism before you fund the on-chain desk.</div></details>
       <details><summary>What does $DIVI do?</summary><div class="a">$DIVI is the utility token of the venue on Robinhood Chain. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate in that flow and is not a claim on the pool.</div></details>
     </div>
@@ -242,6 +259,14 @@ requestAnimationFrame(tick);
   [cSym,cMar,cLev].forEach(el=>el.addEventListener('input',calc));
   function render(b){const first=!B;B=b;if(first){cSym.innerHTML=b.feeds.map(f=>'<option value="'+f.sym+'">'+f.sym+' · '+f.name+'</option>').join('');cards(b);payday(b)}else{cards(b)}calc();if(b.live&&b.mint){document.getElementById('cabar').hidden=false;document.getElementById('ca').textContent=b.mint}}
   document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('ca').textContent);
+  (function season(){const fmtN=(n)=>n>=1e6?(n/1e6).toFixed(n%1e6?1:0)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(Math.round(n));let S=null;
+    function tick(){if(!S)return;const ms=Math.max(0,S.season.end-Date.now()),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);document.getElementById('sCount').textContent=d+'d '+h+'h '+m+'m';}
+    async function load(){try{S=await fetch('/api/season').then(r=>r.json());}catch(e){return}
+      document.getElementById('sPool').textContent=fmtN(S.season.pool);document.getElementById('sMeta').textContent=S.season.players+' desks · '+fmtN(S.season.totalPts)+' points minted';
+      document.getElementById('sTiers').innerHTML=S.tiers.map(t=>'<div class="tier"><span><b>'+t.name+'</b> · hold '+fmtN(t.min)+' $DIVI</span><span><span class="x">'+t.boost+'×</span> pts · '+Math.round(t.rebate*100)+'% fee rebate</span></div>').join('');
+      if(S.leaderboard.length)document.getElementById('sBoard').innerHTML=S.leaderboard.slice(0,6).map(r=>'<div class="lb"><span>'+r.rank+' <span class="mono">'+r.w.slice(0,6)+'…'+r.w.slice(-4)+'</span>'+(r.tier?' · '+r.tier:'')+'</span><span><b>'+fmtN(r.pts)+'</b> pts · ~'+fmtN(r.est)+' $DIVI</span></div>').join('');
+      tick();}
+    load();setInterval(load,30000);setInterval(tick,15000);})();
   function connect(){try{const es=new EventSource('/api/stream');es.onmessage=(e)=>render(JSON.parse(e.data));es.onerror=()=>{es.close();setTimeout(connect,3000)}}catch(e){fetch('/api/board').then(r=>r.json()).then(render)}}
   connect();
   // pinned mechanism: scroll progress drives the coin

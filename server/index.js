@@ -42,6 +42,37 @@ function signedDiv(sym) {
 
 // ── practice desk: paper positions with the same fill, maintenance AND dividend rules ──
 const DESK_START = 10000, DESK_MAX_LEV = 10, DESK_MAINT = 0.05, DESK_FEE_BPS = 8;
+
+// ── THE PAYDAY SEASON: points for every payday, $DIVI holder tiers read on-chain ──
+const SEASON = { n: 1, name: 'Payday Season 1', start: Date.parse(process.env.SEASON_START || '2026-09-16T00:00:00Z'), end: Date.parse(process.env.SEASON_END || '2026-10-31T23:59:59Z'), pool: +(process.env.SEASON_POOL || 20000000), token: '$DIVI' };
+const TIERS = [ // $DIVI held (1B supply): 0.1% / 0.5% / 1%
+  { name: 'Holder', min: 1000000, boost: 1.10, rebate: 0.25 },
+  { name: 'Shareholder', min: 5000000, boost: 1.25, rebate: 0.50 },
+  { name: 'Board', min: 10000000, boost: 1.50, rebate: 0.75 },
+];
+const PTS = { perUsdReceived: 100, perUsdPaid: 25, dripMult: 2, streakStep: 0.10, streakCap: 5, perUsdNotional: 0.01 };
+const seasonOpen = () => Date.now() >= SEASON.start && Date.now() <= SEASON.end;
+function tierOf(bal) { let t = null; for (const x of TIERS) if (bal >= x.min) t = x; return t; }
+function streakMult(n) { return 1 + PTS.streakStep * Math.min(Math.max(n - 1, 0), PTS.streakCap); }
+const BAL = {}; // wallet → { bal, at }
+async function diviBalance(w) {
+  if (!DIVI_MINT || !/^0x[a-f0-9]{40}$/.test(w)) return 0;
+  const c = BAL[w]; if (c && Date.now() - c.at < 60e3) return c.bal;
+  try { const h = await EVM.call(DIVI_MINT, 'balanceOf(address)', [w.replace('0x', '').padStart(64, '0')]); const bal = Number(BigInt(h)) / 1e18; BAL[w] = { bal, at: Date.now() }; return bal; } catch (e) { return c ? c.bal : 0; }
+}
+async function refreshTier(w) { const a = acct(w); if (!a) return null; const bal = await diviBalance(w); const t = tierOf(bal); a.divi = bal; a.tier = t ? t.name : null; a.boost = t ? t.boost : 1; a.rebate = t ? t.rebate : 0; dirty = true; return a; }
+async function refreshTiers() { for (const w of Object.keys(DB.desk)) { if (!/^0x/.test(w)) continue; await refreshTier(w); await new Promise((r) => setTimeout(r, 80)); } }
+setInterval(refreshTiers, 90e3);
+function award(a, pts, why, extra) { if (!seasonOpen()) return 0; pts = Math.round(pts); a.pts = (a.pts || 0) + pts; (a.ptsLog = a.ptsLog || []).unshift(Object.assign({ t: Date.now(), pts, why }, extra || {})); a.ptsLog = a.ptsLog.slice(0, 40); dirty = true; return pts; }
+function seasonView(w) {
+  const rows = Object.entries(DB.desk).filter(([, a]) => (a.pts || 0) > 0).map(([w, a]) => ({ w, pts: a.pts || 0, streak: a.streak || 0, tier: a.tier || null, divReceived: a.divReceived || 0, dripped: a.dripped || 0 })).sort((x, y) => y.pts - x.pts);
+  const total = rows.reduce((s, r) => s + r.pts, 0);
+  const me = w && DB.desk[String(w).toLowerCase()] ? DB.desk[String(w).toLowerCase()] : null;
+  const rank = me ? rows.findIndex((r) => r.w === String(w).toLowerCase()) + 1 : 0;
+  return { season: Object.assign({}, SEASON, { open: seasonOpen(), msLeft: Math.max(0, SEASON.end - Date.now()), players: rows.length, totalPts: total }), tiers: TIERS, pts: PTS,
+    leaderboard: rows.slice(0, 25).map((r, i) => Object.assign({ rank: i + 1, share: total ? r.pts / total : 0, est: total ? SEASON.pool * r.pts / total : 0 }, r)),
+    me: me ? { w: String(w).toLowerCase(), pts: me.pts || 0, rank, share: total ? (me.pts || 0) / total : 0, est: total ? SEASON.pool * (me.pts || 0) / total : 0, streak: me.streak || 0, tier: me.tier || null, boost: me.boost || 1, rebate: me.rebate || 0, divi: me.divi || 0, log: (me.ptsLog || []).slice(0, 12) } : null };
+}
 function acct(w) {
   w = String(w || '').toLowerCase();
   if (!/^0x[a-f0-9]{40}$|^desk_[a-f0-9]{16}$/.test(w)) return null;
@@ -62,11 +93,13 @@ function markDesk() {
         const cash = p.qty * d.next.amount;
         if (p.side === 'long') {
           a.divReceived += cash; p.divReceived = (p.divReceived || 0) + cash;
+          p.streak = (p.streak || 0) + 1; a.streak = Math.max(a.streak || 0, p.streak);
+          award(a, cash * PTS.perUsdReceived * (p.drip ? PTS.dripMult : 1) * streakMult(p.streak) * (a.boost || 1), 'payday', { sym: p.sym, cash, drip: !!p.drip, streak: p.streak, boost: a.boost || 1 });
           if (p.drip) { // DRIP: the dividend buys more of the same position at the current mark, same leverage
             const add = cash * p.lev; p.margin += cash; p.notional += add; p.qty += add / m.mark; p.dripped = (p.dripped || 0) + cash; p.drips = (p.drips || 0) + 1; a.dripped = (a.dripped || 0) + cash;
           } else a.cash += cash;
         }
-        else { const c = Math.min(cash, p.margin); p.margin -= c; a.divPaid += c; p.divPaid = (p.divPaid || 0) + c; }
+        else { const c = Math.min(cash, p.margin); p.margin -= c; a.divPaid += c; p.divPaid = (p.divPaid || 0) + c; award(a, c * PTS.perUsdPaid * (a.boost || 1), 'paid the dividend', { sym: p.sym, cash: c }); }
         (a.events = a.events || []).unshift({ t, sym: p.sym, side: p.side, cash, exTs: d.next.exTs, drip: !!(p.side === 'long' && p.drip) }); a.events = a.events.slice(0, 30);
         dirty = true;
       }
@@ -83,7 +116,8 @@ function deskView(w) {
   const a = acct(w); if (!a) return null;
   const positions = a.positions.map((p) => { const m = E.feed(p.sym); const pnl = m ? pnlOf(p, m) : 0; const d = E.dividend(p.sym); return Object.assign({}, p, { mark: m ? m.mark : null, pnl, equity: p.margin + pnl, liqPx: p.side === 'long' ? p.entry * (1 - (1 / p.lev) + DESK_MAINT) : p.entry * (1 + (1 / p.lev) - DESK_MAINT), nextDiv: d && d.next ? { ex: d.next.ex, exTs: d.next.exTs, cash: p.qty * d.next.amount * (p.side === 'long' ? 1 : -1), confirmed: d.next.confirmed } : null }); });
   const equity = a.cash + positions.reduce((s, p) => s + p.equity, 0);
-  return { cash: a.cash, equity, positions, closed: a.closed.slice(0, 20), events: (a.events || []).slice(0, 12), divReceived: a.divReceived || 0, divPaid: a.divPaid || 0, dripped: a.dripped || 0, start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS };
+  a.streak = a.positions.reduce((m, p) => Math.max(m, p.streak || 0), 0);
+  return { cash: a.cash, equity, positions, closed: a.closed.slice(0, 20), events: (a.events || []).slice(0, 12), divReceived: a.divReceived || 0, divPaid: a.divPaid || 0, dripped: a.dripped || 0, season: { pts: a.pts || 0, streak: a.streak, tier: a.tier || null, boost: a.boost || 1, rebate: a.rebate || 0, divi: a.divi || 0, open: seasonOpen(), end: SEASON.end }, start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS };
 }
 function deskOpen(w, sym, side, lev, margin) {
   const a = acct(w); if (!a) return { error: 'connect a wallet first' };
@@ -92,7 +126,8 @@ function deskOpen(w, sym, side, lev, margin) {
   if (!(margin >= 10)) return { error: 'minimum margin is 10 USDG' };
   if (margin > a.cash) return { error: 'insufficient practice cash' };
   if (side !== 'long' && side !== 'short') return { error: 'side must be long or short' };
-  const notional = margin * lev, fee = notional * DESK_FEE_BPS / 1e4;
+  const notional = margin * lev, fee = notional * DESK_FEE_BPS / 1e4 * (1 - (a.rebate || 0));
+  award(a, notional * PTS.perUsdNotional * (a.boost || 1), 'trade', { sym, notional });
   const entry = m.mark * (1 + (side === 'long' ? 1 : -1) * (m.confBps / 2) / 1e4);
   const p = { id: crypto.randomBytes(6).toString('hex'), sym, side, lev, margin: margin - fee, notional, entry, qty: notional / entry, fee, openedAt: Date.now(), session: m.session, confBps: m.confBps, lastDiv: 0 };
   a.cash -= margin; a.positions.push(p); dirty = true;
@@ -103,7 +138,7 @@ function deskClose(w, id) {
   const i = a.positions.findIndex((p) => p.id === id); if (i < 0) return { error: 'no such position' };
   const p = a.positions[i], m = E.feed(p.sym); if (!m) return { error: 'no mark' };
   const exit = m.mark * (1 - (p.side === 'long' ? 1 : -1) * (m.confBps / 2) / 1e4);
-  const pnl = (exit - p.entry) * p.qty * (p.side === 'long' ? 1 : -1) - p.notional * DESK_FEE_BPS / 1e4;
+  const pnl = (exit - p.entry) * p.qty * (p.side === 'long' ? 1 : -1) - p.notional * DESK_FEE_BPS / 1e4 * (1 - (a.rebate || 0));
   a.positions.splice(i, 1); a.cash += Math.max(0, p.margin + pnl);
   a.closed.unshift(Object.assign({}, p, { exit, pnl, closedAt: Date.now(), reason: 'closed' })); a.closed = a.closed.slice(0, 50); dirty = true;
   return { ok: true, pnl, exit };
@@ -174,8 +209,16 @@ const server = http.createServer(async (req, res) => {
   if (u === '/api/verify') { const payload = url.searchParams.get('payload') || '', sig = url.searchParams.get('sig') || '', pub = url.searchParams.get('pub') || ''; return json(res, 200, { valid: E.verify(payload, sig, pub || null), payload, signer: pub || E.pubkeyHex() }); }
   if (u === '/api/signer') return json(res, 200, { alg: 'ed25519', pub: E.pubkeyHex(), evm: EVM.address(), payload: 'DIVI|<SYM>|<mark·1e8>|<conf·1e8>|<unix s>|<SESSION>|<seq>', dividendDigest: 'sha256("DIVIdiv1" ‖ sym ‖ amount·1e8 ‖ exTs)' });
   if (u === '/api/perps/state') { try { return json(res, 200, Object.assign(await EVM.state(url.searchParams.get('w') || ''), { chain: CHAIN, liquidatable: LIQ })); } catch (e) { return json(res, 502, { error: 'rpc: ' + e.message }); } }
-  if (u === '/api/config') return json(res, 200, { token: '$DIVI', mint: DIVI_MINT || null, live: LIVE, perps: EVM.PERPS || null, usdg: EVM.USDG, evmSigner: EVM.address(), chain: CHAIN, signer: E.pubkeyHex(), board: E.BOARD.map((b) => ({ sym: b.sym, name: b.name, rh: b.rh, etf: !!b.etf })), params: { weights: E.W, floorBps: E.FLOOR_BPS, outlierBps: E.OUTLIER_BPS, desk: { start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS } }, startedAt: DB.startedAt });
+  if (u === '/api/config') return json(res, 200, { season: Object.assign({}, SEASON, { open: seasonOpen() }), tiers: TIERS, token: '$DIVI', mint: DIVI_MINT || null, live: LIVE, perps: EVM.PERPS || null, usdg: EVM.USDG, evmSigner: EVM.address(), chain: CHAIN, signer: E.pubkeyHex(), board: E.BOARD.map((b) => ({ sym: b.sym, name: b.name, rh: b.rh, etf: !!b.etf })), params: { weights: E.W, floorBps: E.FLOOR_BPS, outlierBps: E.OUTLIER_BPS, desk: { start: DESK_START, maxLev: DESK_MAX_LEV, maint: DESK_MAINT, feeBps: DESK_FEE_BPS } }, startedAt: DB.startedAt });
   if (u === '/api/leaderboard') return json(res, 200, { rows: leaderboard() });
+  if (u === '/api/season') { const w = url.searchParams.get('w'); if (w && /^0x[a-f0-9]{40}$/i.test(w)) await refreshTier(w.toLowerCase()); return json(res, 200, seasonView(w)); }
+  if (u === '/api/dev/payday' && process.env.DEV === '1' && req.method === 'POST') { // simulate an ex-date on every open position of a wallet (dev only)
+    const b = await body(req); const a = acct(b.w); if (!a) return json(res, 400, { error: 'bad wallet' }); const amt = +b.amount || 0.25; const t = Date.now();
+    for (const p of a.positions) { const m = E.feed(p.sym); if (!m) continue; const cash = p.qty * amt;
+      if (p.side === 'long') { a.divReceived += cash; p.divReceived = (p.divReceived || 0) + cash; p.streak = (p.streak || 0) + 1; a.streak = Math.max(a.streak || 0, p.streak); if (p.drip) { const add = cash * p.lev; p.margin += cash; p.notional += add; p.qty += add / m.mark; p.dripped = (p.dripped || 0) + cash; p.drips = (p.drips || 0) + 1; a.dripped = (a.dripped || 0) + cash; } else a.cash += cash; award(a, cash * PTS.perUsdReceived * (p.drip ? PTS.dripMult : 1) * streakMult(p.streak) * (a.boost || 1), 'payday', { sym: p.sym, cash, drip: !!p.drip, streak: p.streak, boost: a.boost || 1 }); }
+      else { const c = Math.min(cash, p.margin); p.margin -= c; a.divPaid += c; p.divPaid = (p.divPaid || 0) + c; award(a, c * PTS.perUsdPaid * (a.boost || 1), 'paid the dividend', { sym: p.sym, cash: c }); }
+      (a.events = a.events || []).unshift({ t, sym: p.sym, side: p.side, cash, exTs: Math.floor(t / 1000), drip: !!(p.side === 'long' && p.drip) }); }
+    dirty = true; return json(res, 200, { ok: true, account: deskView(b.w) }); }
   if (u === '/api/desk' && req.method === 'GET') { const v = deskView(url.searchParams.get('w')); return v ? json(res, 200, v) : json(res, 400, { error: 'bad wallet' }); }
   if (u === '/api/desk/open' && req.method === 'POST') { const b = await body(req); const r = deskOpen(b.w, String(b.sym || '').toUpperCase(), b.side, b.lev, b.margin); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }
   if (u === '/api/desk/close' && req.method === 'POST') { const b = await body(req); const r = deskClose(b.w, b.id); return json(res, r.error ? 400 : 200, r.error ? r : Object.assign(r, { account: deskView(b.w) })); }

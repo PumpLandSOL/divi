@@ -126,3 +126,22 @@ $INDEX ATH $76M. Day one.
 divionrh.xyz
 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
 ```
+
+## THE PAYDAY SEASON · attach divi-season-10s.mp4
+```
+THE PAYDAY SEASON is live.
+
+Every dividend your desk receives mints points. DRIP counts double. Hold through ex-dates, streak up to +50%.
+
+Hold $DIVI, get the boost: 1M / 5M / 10M → 1.1× / 1.25× / 1.5× points + fee rebates, read on-chain.
+
+20M $DIVI pool, split by points. Ends Oct 31.
+
+divionrh.xyz
+0xec297bed829f1a8b2c2709ae39ff08baddec04ed
+```
+
+**Reply**
+```
+Points: 100 per $ of dividend received, 25 per $ paid as a short, 1 per $100 traded. Leaderboard and your live share on the desk. Nothing to stake, nothing to lock. divionrh.xyz/desk
+```

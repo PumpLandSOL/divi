@@ -30,6 +30,8 @@
     R.push('spacer');
     R.push([{v:'Account',cls:'hd',span:11}]);
     R.push([{v:'Equity',cls:'h'},{v:fmt(A.equity,0),cls:'r b '+(A.equity>=A.start?'green':'red'),f:'=cash+SUM(position equity)'},{v:'Cash',cls:'h'},{v:fmt(A.cash,0),cls:'r'},{v:'Dividends received',cls:'h'},{v:'$'+fmt(A.divReceived),cls:'r green'},{v:'Dividends paid',cls:'h'},{v:'$'+fmt(A.divPaid),cls:'r red'},{v:'DRIP reinvested',cls:'h'},{v:'$'+fmt(A.dripped||0),cls:'r green',note:'dividends that bought more of the position instead of landing as cash'},{el:btn('Reset',()=>{if(confirm('Reset to 10,000 practice USDG?'))post('/api/desk/reset',{w:who()})}),span:2}]);
+    const sn=A.season||{};R.push([{v:'Payday Season',cls:'hd',span:11}]);
+    R.push([{v:'Points',cls:'h'},{v:fmt(sn.pts||0,0),cls:'r b',f:'=$received×100 ×DRIP2 ×streak ×tier'},{v:'Streak',cls:'h'},{v:(sn.streak||0)+' payday'+(sn.streak===1?'':'s'),cls:'r',note:'consecutive ex-dates held through, +10% each up to 5'},{v:'Tier',cls:'h'},{v:sn.tier?sn.tier+' · '+sn.boost+'×':'none · hold $DIVI',cls:'r '+(sn.tier?'green':'muted'),note:'$DIVI held: '+fmt(sn.divi||0,0)},{v:'Fee rebate',cls:'h'},{v:Math.round((sn.rebate||0)*100)+'%',cls:'r'},{el:btn('Season board',()=>location.href='/#season'),span:3}]);
     R.push('spacer');
     R.push([{v:'Open positions',cls:'hd',span:11}]);
     R.push([{v:'Ticker',cls:'hd'},{v:'Side',cls:'hd'},{v:'Lev',cls:'hd r'},{v:'Entry',cls:'hd r'},{v:'Mark',cls:'hd r'},{v:'Liq',cls:'hd r'},{v:'PnL',cls:'hd r'},{v:'Next dividend',cls:'hd r'},{v:'Received',cls:'hd r'},{v:'DRIP',cls:'hd'}]);

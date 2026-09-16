@@ -58,6 +58,12 @@
   R.push(P('Payday ladder','Every name ordered by its next ex-date with yield, yield × leverage, what a $1,000 long collects on that date, and a one-year compounding path with DRIP at flat price: (1 + yield × lev ÷ payouts per year) ^ payouts − 1.'));
   R.push(M('GET /api/payday?lev=','{ lev, names, ladder: [{ sym, mark, annual, perYear, yieldPct, levYieldPct, dripYearPct, next, daysToEx, per1k }] }'));
   R.push(M('POST /api/desk/drip','{ w, id, on } · toggles DRIP on a long practice position'));
+  R.push(H('5c · The Payday Season'));
+  R.push(P('Points','100 per $ of dividend received on a long; ×2 if the position has DRIP on; × streak (1 + 0.10 × consecutive paydays held, capped at 5); × holder tier boost. Shorts: 25 per $ of dividend paid × boost. Trades: 1 per $100 notional × boost. Points mint only while the season is open.'));
+  R.push(P('Streak','Each open long counts the consecutive ex-dates it has been held through. Your desk streak is the best live position. Close or get liquidated and that position\'s streak ends.'));
+  R.push(P('Holder tiers','$DIVI balance read via eth_call balanceOf on Robinhood Chain (cached 60 s, all desks refreshed every 90 s). Holder 1M: 1.10× points, 25% fee rebate. Shareholder 5M: 1.25×, 50%. Board 10M: 1.50×, 75%. Rebate applies to the 8 bp desk fee on open and close.'));
+  R.push(P('Pool','SEASON_POOL $DIVI (default 20,000,000), split pro rata by points at SEASON_END (default 2026-10-31T23:59:59Z). The leaderboard shows each desk\'s live share and estimated allocation.'));
+  R.push(M('GET /api/season?w=','{ season: { n, name, start, end, pool, open, msLeft, players, totalPts }, tiers, pts, leaderboard: [{ rank, w, pts, streak, tier, share, est }], me }'));
   R.push(H('6 · $DIVI'));
   R.push(P('Utility','Utility token on Robinhood Chain. It is not a claim on the venue, the pool, or any dividend flow. Dividends on DIVI are paid by shorts to longs in USDG; the token does not participate.'));
   R.push('spacer');
