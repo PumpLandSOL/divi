@@ -111,7 +111,7 @@ divionrh.xyz/desk
 Also new: the payday ladder. Every name by next ex-date, yield at your leverage, what a $1,000 long collects, and the 1-year DRIP path. divionrh.xyz/api/payday?lev=5
 ```
 
-## Checklist + comparison · attach divi-checklist.png
+## Checklist + comparison · attach divi-checklist.png · divi-season.png (season explainer)
 ```
 DIVI, shipped:
 
@@ -144,4 +144,20 @@ divionrh.xyz
 **Reply**
 ```
 Points: 100 per $ of dividend received, 25 per $ paid as a short, 1 per $100 traded. Leaderboard and your live share on the desk. Nothing to stake, nothing to lock. divionrh.xyz/desk
+```
+
+## Season explainer · attach divi-season.png
+```
+Payday Season math:
+
+100 pts per $ dividend received
+25 pts per $ a short pays
+DRIP on = 2×
+Streak +10%/ex-date, up to 1.5×
+Hold $DIVI: 1M/5M/10M = 1.1/1.25/1.5×
+
+20M $DIVI pool, by points.
+
+divionrh.xyz
+0xec297bed829f1a8b2c2709ae39ff08baddec04ed
 ```
