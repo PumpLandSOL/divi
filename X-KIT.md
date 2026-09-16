@@ -131,9 +131,9 @@ divionrh.xyz
 ```
 THE PAYDAY SEASON is live.
 
-Every dividend your desk receives mints points. DRIP counts double. Hold through ex-dates, streak up to +50%.
+Every dividend your desk receives mints points. DRIP counts double. Streaks up to +50%.
 
-Hold $DIVI, get the boost: 1M / 5M / 10M → 1.1× / 1.25× / 1.5× points + fee rebates, read on-chain.
+Hold $DIVI, get the boost: 1M / 5M / 10M → 1.1× / 1.25× / 1.5× points + fee rebates.
 
 20M $DIVI pool, split by points. Ends Oct 31.
 
