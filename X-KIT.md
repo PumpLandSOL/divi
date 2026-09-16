@@ -121,7 +121,7 @@ DIVI, shipped:
 ✓ DRIP: paydays compound
 ✓ payday ladder + calendar
 
-$INDEX ATH $76M. We're day one.
+$INDEX ATH $76M. Day one.
 
 divionrh.xyz
 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
