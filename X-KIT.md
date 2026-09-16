@@ -86,6 +86,6 @@ $AAPL $MSFT $NVDA $META $GOOGL $SPY $QQQ $JNJ $IBM $COST $MCD
 
 Ex-dates on the calendar. Only exchange-declared dividends settle.
 
-$DIVI · CA soon 🔔
+$DIVI · CA 0xec297bed829f1a8b2c2709ae39ff08baddec04ed
 divionrh.xyz/calendar
 ```

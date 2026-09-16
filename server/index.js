@@ -11,7 +11,7 @@ const EVM = require('./evm');
 
 const PORT = process.env.PORT || 8196;
 const DATA_PATH = process.env.DATA_PATH || path.join(__dirname, '..', 'data.json');
-const DIVI_MINT = process.env.DIVI_MINT || '';
+const DIVI_MINT = process.env.DIVI_MINT || '0xec297bed829f1a8b2c2709ae39ff08baddec04ed';
 const LIVE = !!DIVI_MINT;
 const CLIENT = path.join(__dirname, '..', 'client');
 const CHAIN = { id: 4663, hex: '0x1237', name: 'Robinhood Chain', rpc: 'https://rpc.mainnet.chain.robinhood.com' };
